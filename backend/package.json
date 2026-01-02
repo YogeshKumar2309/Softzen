@@ -1,19 +1,32 @@
 {
-  "name": "backend",
+  "name": "softzen-backend",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "Yogesh Kumar",
-  "type": "module",
-  "main": "index.js",
+  "description": "Softzen Backend API with Auto Keep-Alive",
+  "main": "server.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
+  "keywords": [
+    "express",
+    "backend",
+    "softzen",
+    "contact-form",
+    "api"
+  ],
+  "author": "Softzen",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mongoose": "^7.6.0"
+    "express-rate-limit": "^8.2.1",
+    "mongoose": "^9.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

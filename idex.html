@@ -3,12 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- SEO Meta Tags -->
-    <title>
-      Softzen - Best Software Development Company | Web & Mobile App Development
-      Services
-    </title>
     <meta
       name="description"
       content="Softzen - Leading Software Development Company in India. Expert Web Development, Mobile Apps, Cloud Solutions & Digital Services. Best IT Company in Moradabad."
@@ -20,8 +14,6 @@
     <meta name="author" content="Softzen" />
     <meta name="robots" content="index, follow" />
     <meta name="googlebot" content="index, follow" />
-
-    <!-- Open Graph -->
     <meta
       property="og:title"
       content="Softzen - Best Software Development Company | Web & Mobile App Development"
@@ -32,47 +24,535 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Softzen" />
-    <meta property="og:url" content="https://www.softzen.in" />
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
       content="Softzen - Professional Software Solutions"
     />
-
-    <!-- Canonical -->
     <link rel="canonical" href="https://www.softzen.in" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" href="icon.png" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="images/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="images/favicon-16x16.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="48x48"
-      href="images/favicon-48x48.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="images/apple-touch-icon.png"
-    />
-    <link rel="manifest" href="/site.webmanifest" />
+    <title>
+      Softzen - Best Software Development Company | Web & Mobile App Development
+      Services
+    </title>
 
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #6366f1;
+        --secondary: #8b5cf6;
+        --dark: #0f172a;
+        --light: #f8fafc;
+        --accent: #f59e0b;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: var(--dark);
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header & Navigation */
+      header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: var(--primary);
+      }
+
+      .menu-toggle {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+      }
+
+      .menu-toggle span {
+        width: 25px;
+        height: 3px;
+        background: var(--dark);
+        transition: 0.3s;
+      }
+
+      /* Hero Section */
+      .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 150px 0 100px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s linear infinite;
+      }
+
+      @keyframes float {
+        to {
+          transform: translateY(-100px);
+        }
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: fadeInUp 0.8s ease-out 0.2s backwards;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        animation: fadeInUp 0.8s ease-out 0.4s backwards;
+      }
+
+      .btn {
+        padding: 15px 35px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        background: white;
+        color: var(--primary);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+      }
+
+      .btn-secondary:hover {
+        background: white;
+        color: var(--primary);
+      }
+
+      /* Services Section */
+      .services {
+        padding: 100px 0;
+        background: var(--light);
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+        color: var(--dark);
+      }
+
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+      }
+
+      .service-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+      }
+
+      .service-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .service-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+      }
+
+      .service-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+      }
+
+      .service-card p {
+        color: #64748b;
+        line-height: 1.8;
+      }
+
+      /* Coming Soon Badge */
+      .service-card.coming-soon {
+        position: relative;
+        opacity: 0.85;
+        cursor: not-allowed;
+      }
+
+      .service-card.coming-soon::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 15px;
+        z-index: 1;
+      }
+
+      .soon-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        z-index: 2;
+        box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .service-card.coming-soon:hover {
+        transform: translateY(-5px);
+      }
+
+      /* Features Section */
+      .features {
+        padding: 100px 0;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        align-items: center;
+      }
+
+      .feature-item {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 10px;
+        transition: background 0.3s;
+      }
+
+      .feature-item:hover {
+        background: var(--light);
+      }
+
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+
+      .feature-content h3 {
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+      }
+
+      .feature-content p {
+        color: #64748b;
+      }
+
+      /* Stats Section */
+      .stats {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+      }
+
+      .stat-item h3 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-item p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      /* Contact Section */
+      .contact {
+        padding: 100px 0;
+        background: var(--light);
+      }
+
+      .contact-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--dark);
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      /* Footer */
+      footer {
+        background: var(--dark);
+        color: white;
+        padding: 3rem 0 1rem;
+        text-align: center;
+      }
+
+      .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+        text-align: left;
+      }
+
+      .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--accent);
+      }
+
+      .footer-section p,
+      .footer-section a {
+        color: #94a3b8;
+        text-decoration: none;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-section a:hover {
+        color: white;
+      }
+
+      .copyright {
+        padding-top: 2rem;
+        border-top: 1px solid #334155;
+        color: #64748b;
+      }
+
+      /* Language Toggle Button */
+      .lang-toggle {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 999;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .lang-toggle:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+      }
+
+      .lang-toggle:active {
+        transform: translateY(-1px);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .menu-toggle {
+          display: flex;
+        }
+
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          flex-direction: column;
+          padding: 2rem;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+          display: none;
+        }
+
+        .nav-links.active {
+          display: flex;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .hero p {
+          font-size: 1.1rem;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .contact-form {
+          padding: 2rem;
+        }
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -138,7 +618,6 @@
         <div class="services-grid">
           <div class="service-card">
             <div class="service-icon">💻</div>
-             <a href="https://portfolio.softzen.in/" target="_blank" >
             <h3 data-en="Web Development" data-hi="वेब डेवलपमेंट">
               वेब डेवलपमेंट
             </h3>
@@ -149,9 +628,7 @@
               आधुनिक और रिस्पॉन्सिव वेबसाइट्स जो आपके बिज़नेस को ऑनलाइन मजबूत
               बनाती हैं।
             </p>
-            </a>
           </div>
-
           <div class="service-card coming-soon">
             <div class="service-icon">📱</div>
             <h3 data-en="Mobile Apps" data-hi="मोबाइल ऐप्स">मोबाइल ऐप्स</h3>
@@ -168,7 +645,6 @@
               >जल्द आ रहा है</span
             >
           </div>
-
           <div class="service-card coming-soon">
             <div class="service-icon">☁️</div>
             <h3 data-en="Cloud Solutions" data-hi="क्लाउड सॉल्यूशन">
@@ -188,7 +664,6 @@
               >जल्द आ रहा है</span
             >
           </div>
-
           <div class="service-card coming-soon">
             <div class="service-icon">🎨</div>
             <h3 data-en="UI/UX Design" data-hi="UI/UX डिजाइन">UI/UX डिजाइन</h3>
@@ -205,7 +680,6 @@
               >जल्द आ रहा है</span
             >
           </div>
-
           <div class="service-card coming-soon">
             <div class="service-icon">🔒</div>
             <h3 data-en="Cyber Security" data-hi="साइबर सिक्योरिटी">
@@ -224,7 +698,6 @@
               >जल्द आ रहा है</span
             >
           </div>
-
           <div class="service-card coming-soon">
             <div class="service-icon">📊</div>
             <h3 data-en="Data Analytics" data-hi="डेटा एनालिटिक्स">
@@ -325,25 +798,25 @@
       <div class="container">
         <div class="stats-grid">
           <div class="stat-item">
-            <h3>0+</h3>
+            <h3 class="counter">500+</h3>
             <p data-en="Happy Clients" data-hi="संतुष्ट ग्राहक">
               संतुष्ट ग्राहक
             </p>
           </div>
           <div class="stat-item">
-            <h3>0+</h3>
+            <h3 class="counter">1000+</h3>
             <p data-en="Completed Projects" data-hi="पूर्ण प्रोजेक्ट्स">
               पूर्ण प्रोजेक्ट्स
             </p>
           </div>
           <div class="stat-item">
-            <h3>1+</h3>
+            <h3 class="counter">50+</h3>
             <p data-en="Team Experts" data-hi="टीम एक्सपर्ट्स">
               टीम एक्सपर्ट्स
             </p>
           </div>
           <div class="stat-item">
-            <h3>0+</h3>
+            <h3 class="counter">10+</h3>
             <p data-en="Years of Experience" data-hi="वर्षों का अनुभव">
               वर्षों का अनुभव
             </p>
@@ -361,7 +834,7 @@
         >
           हमसे संपर्क करें
         </h2>
-        <form class="contact-form" id="contactForm">
+        <form class="contact-form" onsubmit="handleSubmit(event)">
           <div class="form-group">
             <label for="name" data-en="Name" data-hi="नाम">नाम</label>
             <input type="text" id="name" name="name" required />
@@ -390,7 +863,6 @@
             भेजें
           </button>
         </form>
-        <div id="formMessage" class="form-message"></div>
       </div>
     </section>
 
@@ -419,9 +891,9 @@
             <h3 data-en="Contact Information" data-hi="संपर्क जानकारी">
               संपर्क जानकारी
             </h3>
-            <p>📧 softzencompany@gmail.com</p>
-            <p>📞 +91-7818962299</p>
-            <p>📍 Lohaghat, Uttrakhand</p>
+            <p>📧 info@softzen.com</p>
+            <p>📞 +91-XXXXXXXXXX</p>
+            <p>📍 Moradabad, Uttar Pradesh</p>
           </div>
         </div>
         <div class="copyright">
@@ -440,7 +912,152 @@
       <span id="langText">English</span>
     </button>
 
-    <script src="js/language.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+      let currentLang = "hi";
+
+      function toggleLanguage() {
+        currentLang = currentLang === "hi" ? "en" : "hi";
+        const elements = document.querySelectorAll("[data-en][data-hi]");
+
+        elements.forEach((el) => {
+          if (currentLang === "en") {
+            el.textContent = el.getAttribute("data-en");
+          } else {
+            el.textContent = el.getAttribute("data-hi");
+          }
+        });
+
+        document.getElementById("langText").textContent =
+          currentLang === "hi" ? "English" : "हिन्दी";
+
+        // Update HTML lang attribute for SEO
+        document.documentElement.lang = currentLang;
+
+        // Save preference
+        localStorage.setItem("preferredLang", currentLang);
+      }
+
+      // Load saved language preference
+      window.addEventListener("DOMContentLoaded", () => {
+        const savedLang = localStorage.getItem("preferredLang");
+        if (savedLang && savedLang === "en") {
+          toggleLanguage();
+        }
+      });
+
+      function toggleMenu() {
+        const navLinks = document.getElementById("navLinks");
+        navLinks.classList.toggle("active");
+      }
+
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+            document.getElementById("navLinks").classList.remove("active");
+          }
+        });
+      });
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        const message =
+          currentLang === "hi"
+            ? "धन्यवाद! हम जल्द ही आपसे संपर्क करेंगे।"
+            : "Thank you! We will contact you soon.";
+        alert(message);
+        e.target.reset();
+      }
+
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -100px 0px",
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }
+        });
+      }, observerOptions);
+
+      document
+        .querySelectorAll(".service-card, .feature-item")
+        .forEach((el) => {
+          el.style.opacity = "0";
+          el.style.transform = "translateY(20px)";
+          el.style.transition = "opacity 0.6s, transform 0.6s";
+          observer.observe(el);
+        });
+
+      // Coming Soon Click Handler
+      document.querySelectorAll(".service-card.coming-soon").forEach((card) => {
+        card.addEventListener("click", function (e) {
+          e.preventDefault();
+          const message =
+            currentLang === "hi"
+              ? "🚀 यह सेवा जल्द ही उपलब्ध होगी! हमसे संपर्क करें अधिक जानकारी के लिए।"
+              : "🚀 This service is coming soon! Contact us for more information.";
+          alert(message);
+        });
+      });
+    </script>
   </body>
-</html>
+</html> 
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coming Soon | Yogesh Kumar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .box {
+      max-width: 500px;
+    }
+    h1 {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+    .tag {
+      margin-top: 20px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Coming Soon 🚀</h1>
+    <p>We are building something awesome.</p>
+    <p>Professional Web Development Services</p>
+    <div class="tag">© Yogesh Kumar | Full-Stack Developer</div>
+  </div>
+</body>
+</html> -->
