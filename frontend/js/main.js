@@ -1,5 +1,5 @@
 // Backend API URL - Change this to your Render URL after deployment
-const API_URL = 'http://localhost:5001/api/contact';
+const API_URL = 'https://softzen-mdyx.onrender.com/api/contact';
 
 // Contact form submission
 const contactForm = document.getElementById('contactForm');
