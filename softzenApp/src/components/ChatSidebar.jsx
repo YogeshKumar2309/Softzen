@@ -2,7 +2,13 @@ import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
 
 function ChatSidebar({ onClose }) {
-  const { activeChat, setActiveChat, onlineUsers, messagesByChat } = useChatStore();
+  const {
+    activeChat,
+    setActiveChat,
+    onlineUsers,
+    messagesByChat,
+    unreadCounts,
+  } = useChatStore();
   const me = useAuthStore((s) => s.user);
 
   // Saare known users (jinse chat hui + online users)
@@ -30,6 +36,8 @@ function ChatSidebar({ onClose }) {
     setActiveChat(chat);
     onClose?.();
   };
+
+  const generalUnread = unreadCounts['general'] || 0;
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
@@ -65,7 +73,16 @@ function ChatSidebar({ onClose }) {
             #
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-gray-900 truncate">General</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-semibold text-gray-900 truncate">
+                General
+              </div>
+              {generalUnread > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                  {generalUnread > 99 ? '99+' : generalUnread}
+                </span>
+              )}
+            </div>
             <div className="text-xs text-gray-500 truncate">
               Sab log yahan message kar sakte hain
             </div>
@@ -85,6 +102,7 @@ function ChatSidebar({ onClose }) {
           const isActive = activeChat === userId;
           const dmKey = `dm:${userId}`;
           const lastMsg = messagesByChat[dmKey]?.slice(-1)[0];
+          const unread = unreadCounts[dmKey] || 0;
 
           return (
             <button
@@ -107,10 +125,21 @@ function ChatSidebar({ onClose }) {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 truncate text-sm">
-                  {userId}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-gray-900 truncate text-sm">
+                    {userId}
+                  </div>
+                  {unread > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
                 </div>
-                <div className="text-xs text-gray-500 truncate">
+                <div
+                  className={`text-xs truncate ${
+                    unread > 0 ? 'font-semibold text-gray-800' : 'text-gray-500'
+                  }`}
+                >
                   {lastMsg ? lastMsg.text : 'Chat shuru karo'}
                 </div>
               </div>

@@ -4,8 +4,14 @@ import { useChatStore } from '../stores/chatStore';
 
 function Header() {
   const { user, logout } = useAuthStore();
-  const setActiveChat = useChatStore((s) => s.setActiveChat);
+  const { setActiveChat, unreadCounts } = useChatStore();
   const navigate = useNavigate();
+
+  // Total unread = general + saare DM
+  const totalUnread = Object.values(unreadCounts).reduce(
+    (sum, n) => sum + (n || 0),
+    0
+  );
 
   const handleLogout = () => {
     logout();
@@ -39,9 +45,14 @@ function Header() {
             <>
               <button
                 onClick={goToChat}
-                className="text-sm font-medium text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2"
+                className="relative text-sm font-medium text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2"
               >
                 Chat
+                {totalUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md animate-pulse">
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                )}
               </button>
 
               <div className="flex items-center gap-2">
