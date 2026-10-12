@@ -1,87 +1,50 @@
+// src/stores/authStore.js
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { api } from '../lib/api';
+import { useChatStore } from './chatStore';
 
-export const useChatStore = create((set, get) => ({
-  socket: null,
-  activeChat: 'general',
-  messagesByChat: {},
-  onlineUsers: [],
-  typingByChat: {},
-  connected: false,
-  unreadCounts: {},   // ← यह ज़रूरी है
+export const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
 
-  setSocket: (socket) => set({ socket }),
+      login: async (uniqueId, password) => {
+        const res = await api.post('/user/login', { uniqueId, password });
+        if (res.data.success) {
+          localStorage.setItem('token', res.data.data.token);
+          set({
+            user: {
+              uniqueId: res.data.data.uniqueId,
+              level: res.data.data.level,
+            },
+            token: res.data.data.token,
+          });
+          return { ok: true };
+        }
+        return { ok: false, message: res.data.message };
+      },
 
-  setActiveChat: (chat) => {
-    set({ activeChat: chat });
-    const key = chat === 'general' ? 'general' : `dm:${chat}`;
-    set((s) => ({
-      unreadCounts: { ...s.unreadCounts, [key]: 0 },
-    }));
-  },
+      register: async (uniqueId, password, message) => {
+        const res = await api.post('/user/register', {
+          uniqueId,
+          password,
+          message,
+        });
+        return res.data;
+      },
 
-  setConnected: (v) => set({ connected: v }),
-  setOnlineUsers: (users) => set({ onlineUsers: users }),
-
-  addMessage: (chat, message, isActiveChat = false) => {
-    const key = chat === 'general' ? 'general' : `dm:${chat}`;
-    set((s) => {
-      const existing = s.messagesByChat[key] || [];
-      if (message._id && existing.some((m) => m._id === message._id)) {
-        return s;
-      }
-
-      const newUnread = { ...s.unreadCounts };
-      if (!isActiveChat) {
-        newUnread[key] = (newUnread[key] || 0) + 1;
-      }
-
-      return {
-        messagesByChat: {
-          ...s.messagesByChat,
-          [key]: [...existing, message],
-        },
-        unreadCounts: newUnread,
-      };
-    });
-  },
-
-  setMessages: (chat, messages) => {
-    const key = chat === 'general' ? 'general' : `dm:${chat}`;
-    set((s) => ({
-      messagesByChat: { ...s.messagesByChat, [key]: messages },
-    }));
-  },
-
-  setTyping: (chat, user, isTyping) => {
-    const key = chat === 'general' ? 'general' : `dm:${chat}`;
-    set((s) => {
-      const current = s.typingByChat[key];
-      let next;
-      if (chat === 'general') {
-        const list = Array.isArray(current) ? current : [];
-        next = isTyping
-          ? list.includes(user) ? list : [...list, user]
-          : list.filter((u) => u !== user);
-      } else {
-        next = isTyping;
-      }
-      return {
-        typingByChat: { ...s.typingByChat, [key]: next },
-      };
-    });
-  },
-
-  markMessagesAsRead: (chatWith) => {
-    const key = `dm:${chatWith}`;
-    set((s) => {
-      const msgs = s.messagesByChat[key];
-      if (!msgs) return s;
-      const updated = msgs.map((m) =>
-        m.receiverId === chatWith && !m.read ? { ...m, read: true } : m
-      );
-      return {
-        messagesByChat: { ...s.messagesByChat, [key]: updated },
-      };
-    });
-  },
-}));
+      logout: () => {
+        localStorage.removeItem('token');
+        // Chat data bhi clear karo
+        useChatStore.getState().clearAll();
+        localStorage.removeItem('softzen-chat');
+        set({ user: null, token: null });
+      },
+    }),
+    {
+      name: 'softzen-auth',
+    }
+  )
+);

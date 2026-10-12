@@ -33,28 +33,35 @@ function ChatPage() {
     if (!token) navigate('/login');
   }, [token, navigate]);
 
-  // Notification permission
   useEffect(() => {
     requestNotificationPermission();
   }, []);
 
-  // Page load par conversations fetch karo
+  // ===== Page load par conversations fetch karo =====
   useEffect(() => {
     if (!token) return;
 
-    api
-      .get('/message/conversations')
-      .then((res) => {
-        if (res.data.success) {
-          setConversations(res.data.data);
-        }
-      })
-      .catch((err) => console.warn('Conversations load fail:', err.message));
+    const fetchConversations = () => {
+      api
+        .get('/message/conversations')
+        .then((res) => {
+          if (res.data.success) {
+            setConversations(res.data.data);
+          }
+        })
+        .catch((err) =>
+          console.warn('Conversations load fail:', err.message)
+        );
+    };
+
+    fetchConversations();
+
+    // Har 30 sec me background refresh
+    const interval = setInterval(fetchConversations, 30000);
+    return () => clearInterval(interval);
   }, [token]);
 
-  // ============================================================
-  // SOCKET CONNECT — यहाँ नीचे वाले handlers हैं
-  // ============================================================
+  // ===== Socket =====
   useEffect(() => {
     if (!token || !user) return;
 
@@ -69,34 +76,34 @@ function ChatPage() {
     setSocket(socket);
 
     socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
+      console.log('✅ Socket connected');
       setConnected(true);
+
+      // Reconnect hone par conversations refresh
+      api
+        .get('/message/conversations')
+        .then((res) => {
+          if (res.data.success) setConversations(res.data.data);
+        })
+        .catch(() => {});
     });
 
-    socket.on('disconnect', (reason) => {
-      console.log('❌ Socket disconnected:', reason);
-      setConnected(false);
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('Socket connect error:', err.message);
-      setConnected(false);
-    });
+    socket.on('disconnect', () => setConnected(false));
+    socket.on('connect_error', () => setConnected(false));
 
     socket.on('online_users', (users) => {
       setOnlineUsers(users || []);
     });
 
-    // ============ यहाँ लगाना है — GENERAL MESSAGE ============
+    // ===== General =====
     socket.on('new_message', (m) => {
       const isOwn = m.senderId === user.uniqueId;
-      const isCurrentChat = useChatStore.getState().activeChat === 'general';
+      const isCurrentChat =
+        useChatStore.getState().activeChat === 'general';
       const windowActive = document.visibilityState === 'visible';
 
-      // ✅ isActiveChat param ke saath addMessage
       addMessage('general', m, isCurrentChat);
 
-      // Notification agar dusre ka message aur wahi chat open nahi
       if (!isOwn && !(isCurrentChat && windowActive)) {
         playNotificationSound();
         showBrowserNotification(
@@ -107,20 +114,16 @@ function ChatPage() {
       }
     });
 
-    // ============ यहाँ लगाना है — PRIVATE MESSAGE (DM) ============
+    // ===== DM =====
     socket.on('new_private_message', (m) => {
       const other = m.senderId === user.uniqueId ? m.receiverId : m.senderId;
       const isOwn = m.senderId === user.uniqueId;
       const isCurrentChat = useChatStore.getState().activeChat === other;
       const windowActive = document.visibilityState === 'visible';
 
-      // ✅ isActiveChat param ke saath addMessage
       addMessage(other, m, isCurrentChat);
-
-      // Conversation list update (sidebar me dikhega)
       upsertConversation(other, m.text, m.senderId, m.createdAt);
 
-      // Notification
       if (!isOwn && !(isCurrentChat && windowActive)) {
         playNotificationSound();
         showBrowserNotification(
@@ -130,14 +133,12 @@ function ChatPage() {
         );
       }
 
-      // Agar wahi chat khuli hai to auto read mark karo
       if (isCurrentChat && !isOwn) {
         socket.emit('mark_read', { from: m.senderId });
       }
     });
 
-    socket.on('messages_read', ({ by, count }) => {
-      console.log(`✅ ${by} ne ${count} messages read kiye`);
+    socket.on('messages_read', ({ by }) => {
       useChatStore.getState().markMessagesAsRead(by);
     });
 
@@ -168,7 +169,7 @@ function ChatPage() {
     };
   }, [token, user?.uniqueId]);
 
-  // Active chat change → messages load + read mark
+  // ===== Active chat change → messages load + read mark =====
   useEffect(() => {
     if (!token || !activeChat) return;
 
