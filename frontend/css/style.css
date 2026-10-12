@@ -469,3 +469,58 @@ footer p {
   .goal-card { padding: 22px 18px; }
   .goals-intro { font-size: 1rem; }
 }
+
+
+/* ========== NAV CHAT BUTTON ========== */
+.nav-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff !important;
+  border-radius: 24px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+}
+
+.nav-chat-btn::before {
+  content: '💬';
+  font-size: 1rem;
+}
+
+.nav-chat-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(102, 126, 234, 0.5);
+  color: #fff !important;
+}
+
+/* ========== HERO CHAT BUTTON ========== */
+.btn-chat {
+  background: #fff;
+  color: #667eea !important;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.btn-chat::before {
+  content: '💬 ';
+  font-size: 1.1rem;
+}
+
+.btn-chat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  background: #f9faff;
+}
+
+/* Mobile — nav chat button chota karo */
+@media (max-width: 768px) {
+  .nav-chat-btn {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+  }
+}
