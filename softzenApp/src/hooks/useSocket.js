@@ -5,6 +5,9 @@ import { useChatStore } from '../stores/chatStore';
 import { api, SOCKET_URL } from '../lib/api';
 import { playNotificationSound, showBrowserNotification } from '../lib/notify';
 
+// Helper: user chat page par hai ya nahi
+const isOnChatPage = () => window.location.pathname.startsWith('/chat');
+
 export function useSocket() {
   const { user, token } = useAuthStore();
 
@@ -46,13 +49,22 @@ export function useSocket() {
       useChatStore.getState().setOnlineUsers(users || []);
     });
 
+    // ===== General =====
     socket.on('new_message', (m) => {
       console.log('📩 General:', m);
       const isOwn = m.senderId === user.uniqueId;
-      const isCurrentChat = useChatStore.getState().activeChat === 'general';
+
+      // ✅ FIX: check chat page + current chat
+      const activeOnChatPage = isOnChatPage();
+      const isCurrentChat =
+        activeOnChatPage &&
+        useChatStore.getState().activeChat === 'general';
+
       const windowActive = document.visibilityState === 'visible';
 
       useChatStore.getState().addMessage('general', m, isCurrentChat);
+
+      console.log('🟡 unread after general:', useChatStore.getState().unreadCounts);
 
       if (!isOwn && !(isCurrentChat && windowActive)) {
         playNotificationSound();
@@ -64,17 +76,26 @@ export function useSocket() {
       }
     });
 
+    // ===== DM =====
     socket.on('new_private_message', (m) => {
       console.log('📩 DM:', m);
       const other = m.senderId === user.uniqueId ? m.receiverId : m.senderId;
       const isOwn = m.senderId === user.uniqueId;
-      const isCurrentChat = useChatStore.getState().activeChat === other;
+
+      // ✅ FIX: check chat page + current chat
+      const activeOnChatPage = isOnChatPage();
+      const isCurrentChat =
+        activeOnChatPage &&
+        useChatStore.getState().activeChat === other;
+
       const windowActive = document.visibilityState === 'visible';
 
       useChatStore.getState().addMessage(other, m, isCurrentChat);
-      useChatStore.getState().upsertConversation(other, m.text, m.senderId, m.createdAt);
+      useChatStore
+        .getState()
+        .upsertConversation(other, m.text, m.senderId, m.createdAt);
 
-      console.log('🟡 After add — unreadCounts:', useChatStore.getState().unreadCounts);
+      console.log('🟡 unread after DM:', useChatStore.getState().unreadCounts);
 
       if (!isOwn && !(isCurrentChat && windowActive)) {
         playNotificationSound();
@@ -125,7 +146,9 @@ export function useSocket() {
     if (!token) return;
     const fetch = () => {
       api.get('/message/conversations').then((res) => {
-        if (res.data.success) useChatStore.getState().setConversations(res.data.data);
+        if (res.data.success) {
+          useChatStore.getState().setConversations(res.data.data);
+        }
       }).catch(() => {});
     };
     fetch();
