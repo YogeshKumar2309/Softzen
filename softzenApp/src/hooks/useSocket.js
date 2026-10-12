@@ -3,10 +3,7 @@ import { io } from 'socket.io-client';
 import { useAuthStore } from '../stores/authStore';
 import { useChatStore } from '../stores/chatStore';
 import { api, SOCKET_URL } from '../lib/api';
-import {
-  playNotificationSound,
-  showBrowserNotification,
-} from '../lib/notify';
+import { playNotificationSound, showBrowserNotification } from '../lib/notify';
 
 export function useSocket() {
   const { user, token } = useAuthStore();
@@ -14,7 +11,6 @@ export function useSocket() {
   useEffect(() => {
     if (!token || !user) return;
 
-    // Purana socket disconnect
     const oldSocket = useChatStore.getState().socket;
     if (oldSocket) oldSocket.disconnect();
 
@@ -29,15 +25,11 @@ export function useSocket() {
       console.log('✅ Socket connected:', socket.id);
       useChatStore.getState().setConnected(true);
 
-      // Conversations refresh
-      api
-        .get('/message/conversations')
-        .then((res) => {
-          if (res.data.success) {
-            useChatStore.getState().setConversations(res.data.data);
-          }
-        })
-        .catch(() => {});
+      api.get('/message/conversations').then((res) => {
+        if (res.data.success) {
+          useChatStore.getState().setConversations(res.data.data);
+        }
+      }).catch(() => {});
     });
 
     socket.on('disconnect', (reason) => {
@@ -54,12 +46,10 @@ export function useSocket() {
       useChatStore.getState().setOnlineUsers(users || []);
     });
 
-    // ===== General message =====
     socket.on('new_message', (m) => {
       console.log('📩 General:', m);
       const isOwn = m.senderId === user.uniqueId;
-      const isCurrentChat =
-        useChatStore.getState().activeChat === 'general';
+      const isCurrentChat = useChatStore.getState().activeChat === 'general';
       const windowActive = document.visibilityState === 'visible';
 
       useChatStore.getState().addMessage('general', m, isCurrentChat);
@@ -74,7 +64,6 @@ export function useSocket() {
       }
     });
 
-    // ===== DM =====
     socket.on('new_private_message', (m) => {
       console.log('📩 DM:', m);
       const other = m.senderId === user.uniqueId ? m.receiverId : m.senderId;
@@ -83,9 +72,9 @@ export function useSocket() {
       const windowActive = document.visibilityState === 'visible';
 
       useChatStore.getState().addMessage(other, m, isCurrentChat);
-      useChatStore
-        .getState()
-        .upsertConversation(other, m.text, m.senderId, m.createdAt);
+      useChatStore.getState().upsertConversation(other, m.text, m.senderId, m.createdAt);
+
+      console.log('🟡 After add — unreadCounts:', useChatStore.getState().unreadCounts);
 
       if (!isOwn && !(isCurrentChat && windowActive)) {
         playNotificationSound();
@@ -132,23 +121,15 @@ export function useSocket() {
     };
   }, [token, user?.uniqueId]);
 
-  // Page load par conversations fetch karo
   useEffect(() => {
     if (!token) return;
-
-    const fetchConversations = () => {
-      api
-        .get('/message/conversations')
-        .then((res) => {
-          if (res.data.success) {
-            useChatStore.getState().setConversations(res.data.data);
-          }
-        })
-        .catch(() => {});
+    const fetch = () => {
+      api.get('/message/conversations').then((res) => {
+        if (res.data.success) useChatStore.getState().setConversations(res.data.data);
+      }).catch(() => {});
     };
-
-    fetchConversations();
-    const interval = setInterval(fetchConversations, 30000);
-    return () => clearInterval(interval);
+    fetch();
+    const i = setInterval(fetch, 30000);
+    return () => clearInterval(i);
   }, [token]);
 }

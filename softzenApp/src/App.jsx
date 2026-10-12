@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
 import { useSocket } from './hooks/useSocket';
 import Header from './components/Header';
@@ -14,7 +13,6 @@ function PrivateRoute({ children }) {
 }
 
 function SocketProvider() {
-  // ✅ Ye App level par hai — har page par socket chalega
   useSocket();
   return null;
 }
@@ -24,37 +22,20 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Socket provider — sirf jab logged in ho */}
+      {/* ✅ Ye har page par socket chalayega jab tak logged in ho */}
       {token && <SocketProvider />}
 
       <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <UsersPage />
-            </>
-          }
-        />
+        <Route path="/" element={<><Header /><UsersPage /></>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
         <Route
           path="/chat"
-          element={
-            <PrivateRoute>
-              <ChatPage />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><ChatPage /></PrivateRoute>}
         />
         <Route
           path="/chat/:uniqueId"
-          element={
-            <PrivateRoute>
-              <ChatPage />
-            </PrivateRoute>
-          }
+          element={<PrivateRoute><ChatPage /></PrivateRoute>}
         />
       </Routes>
     </BrowserRouter>
