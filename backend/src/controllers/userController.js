@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const presence = require('../socket/presence');
+const jwt = require('jsonwebtoken');
 
 exports.registerUser = async (req, res) => {
   try {
@@ -56,6 +58,59 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+
+// POST /api/user/login
+exports.loginUser = async (req, res) => {
+  try {
+    const { uniqueId, password } = req.body;
+
+    if (!uniqueId || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unique ID aur Password dono chahiye.'
+      });
+    }
+
+    const id = uniqueId.trim().toLowerCase();
+    const user = await User.findOne({ uniqueId: id });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Galat ID ya password.'
+      });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Galat ID ya password.'
+      });
+    }
+
+    // JWT token banao (7 din ke liye valid)
+    const token = jwt.sign(
+      { id: user._id, uniqueId: user.uniqueId, level: user.level },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Welcome back ${user.uniqueId}! 🎉`,
+      data: {
+        token,
+        uniqueId: user.uniqueId,
+        level: user.level
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.getMemberCount = async (req, res) => {
   try {
     const totalMembers = await User.countDocuments();
@@ -67,72 +122,90 @@ exports.getMemberCount = async (req, res) => {
 };
 
 
-// GET /api/user/all?page=1&limit=20&key=ADMIN_KEY
-// Pagination ke saath saare users (password ke bina)
 exports.getAllUsers = async (req, res) => {
   try {
-    // ===== Admin key check =====
-    const adminKey = req.headers['x-admin-key'] || req.query.key;
-    if (adminKey !== process.env.ADMIN_KEY) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. Admin key required.'
-      });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
+    const search = (req.query.search || '').trim().toLowerCase();
+    const level = req.query.level ? parseInt(req.query.level) : null;
+    const status = req.query.status; // 'online' | 'offline' | undefined
+    const sortBy = req.query.sort || 'createdAt';
+    const order = req.query.order === 'asc' ? 1 : -1;
+
+    const filter = {};
+    if (search) {
+      filter.uniqueId = { $regex: search, $options: 'i' };
+    }
+    if (level && [1, 2, 3].includes(level)) {
+      filter.level = level;
     }
 
-    // ===== Pagination params =====
-    let page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 20;
+    // Online/offline filter
+    const onlineIds = presence.getOnlineIds();
+    if (status === 'online') {
+      filter.uniqueId = {
+        ...(filter.uniqueId || {}),
+        $in: onlineIds.length ? onlineIds : ['___none___']
+      };
+    } else if (status === 'offline') {
+      filter.uniqueId = {
+        ...(filter.uniqueId || {}),
+        $nin: onlineIds
+      };
+    }
 
-    // Validation
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 20;
-    if (limit > 100) limit = 100; // max 100 per page
-
+    const allowedSorts = ['createdAt', 'uniqueId', 'level', 'tokens'];
+    const sortField = allowedSorts.includes(sortBy) ? sortBy : 'createdAt';
     const skip = (page - 1) * limit;
 
-    // ===== Sort options =====
-    const sortBy = req.query.sort || 'createdAt';  // createdAt | uniqueId | level
-    const order = req.query.order === 'desc' ? -1 : 1;
+    const [users, totalMembers] = await Promise.all([
+      User.find(filter)
+        .select('uniqueId level tokens message createdAt')
+        .sort({ [sortField]: order })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(filter)
+    ]);
 
-    const allowedSorts = ['createdAt', 'uniqueId', 'level'];
-    const sortField = allowedSorts.includes(sortBy) ? sortBy : 'createdAt';
+    const totalPages = Math.ceil(totalMembers / limit) || 1;
 
-    // ===== DB queries =====
-    const totalMembers = await User.countDocuments();
-    const totalPages = Math.ceil(totalMembers / limit);
+    // Har user ke saath isOnline bhi bhejo
+    const enriched = users.map(u => ({
+      ...u,
+      isOnline: presence.isOnline(u.uniqueId)
+    }));
 
-    const users = await User.find({})
-      .select('-password -__v')
-      .sort({ [sortField]: order })
-      .skip(skip)
-      .limit(limit);
-
-    // ===== Response =====
     res.status(200).json({
       success: true,
+      onlineCount: presence.getCount(),
       pagination: {
         currentPage: page,
         perPage: limit,
         totalMembers,
         totalPages,
         hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-        nextPage: page < totalPages ? page + 1 : null,
-        prevPage: page > 1 ? page - 1 : null
+        hasPrevPage: page > 1
       },
-      data: users.map(u => ({
-        uniqueId: u.uniqueId,
-        message: u.message || '(koi message nahi)',
-        level: u.level,
-        joinedAt: u.createdAt
-      }))
+      data: enriched
     });
   } catch (err) {
     console.error('Get all users error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+
+// GET /api/user/online - kitne online hain + list
+exports.getOnlineUsers = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      count: presence.getCount(),
+      data: presence.getOnlineList()
     });
+  } catch (err) {
+    console.error('Online users error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
