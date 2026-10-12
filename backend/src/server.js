@@ -5,6 +5,7 @@ const contactRoutes = require('./routes/contact');
 const { startKeepAlive } = require('./utils/keepAlive');
 const connectDB = require('./config/db');
 const contactLimiter = require('./middleware/rateLimiter');
+const userRoutes = require('./routes/user');
 
 dotenv.config();
 
@@ -50,6 +51,8 @@ app.get('/ping', (req, res) => {
 
 // Routes
 app.use('/api/contact', contactLimiter, contactRoutes);
+
+app.use('/api/user', userRoutes);
 
 // Root route
 app.get('/', (req, res) => {
