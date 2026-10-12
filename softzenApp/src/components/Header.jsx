@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useChatStore } from '../stores/chatStore';
+import { updateTitleUnread } from '../lib/notify';
 
 function Header() {
   const { user, logout } = useAuthStore();
@@ -11,6 +13,11 @@ function Header() {
     (sum, n) => sum + (n || 0),
     0
   );
+
+  // Title bar update — (3) Softzen
+  useEffect(() => {
+    updateTitleUnread(totalUnread);
+  }, [totalUnread]);
 
   const handleLogout = () => {
     logout();
@@ -48,7 +55,6 @@ function Header() {
               >
                 <span>Chat</span>
 
-                {/* 🟡 YELLOW DOT */}
                 {totalUnread > 0 && (
                   <span className="relative flex">
                     <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-yellow-400 opacity-75" />
