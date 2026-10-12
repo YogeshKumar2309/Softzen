@@ -1,12 +1,18 @@
 // ====== Backend URL ======
-// Apna Render URL yahan daalein (contact wala hi rahega, bas /user add karna hai)
-const USER_API = 'https://softzen-mdyx.onrender.com/api/user';
+// Local MongoDB ke liye:
+const API_BASE = 'http://localhost:5001/api';
 
+// Deploy ke baad ye use karna:
+// const API_BASE = 'https://softzen-mdyx.onrender.com/api';
+
+const USER_API = `${API_BASE}/user`;
+
+// ====== Elements ======
 const joinForm = document.getElementById('joinForm');
 const joinMessageBox = document.getElementById('joinMessageBox');
 const memberCountEl = document.getElementById('memberCount');
 
-// ====== Live Member Counter ======
+// ====== Live Member Counter Load ======
 async function loadMemberCount() {
   try {
     const res = await fetch(`${USER_API}/count`);
@@ -15,11 +21,11 @@ async function loadMemberCount() {
       animateCount(data.totalMembers);
     }
   } catch (err) {
-    console.warn('Counter load fail:', err);
+    console.warn('Counter load fail:', err.message);
   }
 }
 
-// Counter animation: 0 se target tak
+// Counter animation 0 se target tak
 function animateCount(target) {
   if (!memberCountEl) return;
 
@@ -29,16 +35,16 @@ function animateCount(target) {
   }
 
   let current = 0;
-  const duration = 1200; // 1.2 sec
+  const duration = 1200;
   const startTime = performance.now();
 
   function update(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    // Ease out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out
     current = Math.floor(eased * target);
     memberCountEl.textContent = current.toLocaleString('en-IN');
+
     if (progress < 1) {
       requestAnimationFrame(update);
     } else {
@@ -48,7 +54,7 @@ function animateCount(target) {
   requestAnimationFrame(update);
 }
 
-// ====== Form Submit ======
+// ====== Join Form Submit ======
 if (joinForm) {
   joinForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -92,12 +98,12 @@ if (joinForm) {
         showJoinMessage(`✅ ${data.message}`, 'success');
         joinForm.reset();
 
-        // Counter update karo
+        // Counter update
         if (data.data && typeof data.data.totalMembers === 'number') {
           animateCount(data.data.totalMembers);
         }
 
-        // Success ke baad counter tak scroll
+        // Counter tak scroll
         setTimeout(() => {
           document.querySelector('.counter-box')?.scrollIntoView({
             behavior: 'smooth',
@@ -109,7 +115,7 @@ if (joinForm) {
       }
     } catch (err) {
       console.error(err);
-      showJoinMessage('❌ नेटवर्क एरर। इंटरनेट कनेक्शन चेक करें।', 'error');
+      showJoinMessage('❌ नेटवर्क एरर। बैकएंड चल रहा है?', 'error');
     } finally {
       btn.disabled = false;
       btn.textContent = originalText;
@@ -117,6 +123,7 @@ if (joinForm) {
   });
 }
 
+// ====== Message Show ======
 function showJoinMessage(text, type) {
   if (!joinMessageBox) return;
   joinMessageBox.textContent = text;
@@ -130,5 +137,5 @@ function showJoinMessage(text, type) {
   joinMessageBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// Page load hone par counter load karo
+// ====== Load on Start ======
 document.addEventListener('DOMContentLoaded', loadMemberCount);

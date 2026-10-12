@@ -1,397 +1,307 @@
 <!DOCTYPE html>
 <html lang="hi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name='impact-site-verification' value='aca653e6-61ec-42c5-8bb5-b37836f8d319'>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Softzen | User-Owned Chat Community</title>
+  <meta name="description" content="Softzen - A user-owned chat application. Equal contribution, equal profit. Join our Web3 community today." />
+  <meta name="keywords" content="Softzen, chat app, community owned, web3, user owned company, social chat" />
+  <meta name="author" content="Softzen" />
 
-    <title>Softzen | Best Software Development Company in Uttarakhand & India</title>
-    <meta name="description" content="Softzen is the leading software development company in Lohaghat, Uttarakhand. We specialize in custom web development, mobile apps, and digital solutions for businesses." />
-    <meta name="keywords" content="software development company Uttarakhand, IT services Lohaghat, web development Champawat, mobile app development Kumaon, Softzen Uttarakhand" />
-    <meta name="author" content="Softzen" />
-    <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Softzen - User Owned Chat Community" />
+  <meta property="og:description" content="Join the chat community where everyone is an owner." />
+  <meta property="og:type" content="website" />
 
-    <meta property="og:title" content="Softzen - Transforming Ideas into Digital Reality" />
-    <meta property="og:description" content="Looking for expert developers? Softzen provides top-notch web and mobile app solutions." />
-    <meta property="og:image" content="https://www.softzen.in/images/og-image.jpg" />
-    <meta property="og:url" content="https://www.softzen.in" />
-    <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Softzen | Modern Software Solutions" />
-    <meta name="twitter:description" content="Professional software development and digital services by Softzen." />
+  <!-- ========== HEADER ========== -->
+  <header>
+    <nav class="container">
+      <div class="logo">Softzen</div>
 
-    <link rel="canonical" href="https://www.softzen.in" />
-
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareBusiness",
-        "name": "Softzen",
-        "url": "https://www.softzen.in",
-        "logo": "https://www.softzen.in/images/logo.png",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Lohaghat",
-          "addressRegion": "Uttarakhand",
-          "addressCountry": "IN"
-        },
-        "contactPoint": {
-          "@type": "ContactPoint",
-          "telephone": "+91-7818962299",
-          "contactType": "customer service"
-        }
-      }
-    </script>
-
-    <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <header>
-      <nav class="container">
-        <div class="logo">Softzen</div>
-        <div class="menu-toggle" onclick="toggleMenu()">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <ul class="nav-links" id="navLinks">
-          <li><a href="#home" data-en="Home" data-hi="होम">होम</a></li>
-          <li><a href="#services" data-en="Services" data-hi="सेवाएं">सेवाएं</a></li>
-          <li><a href="#community" data-en="Join Us" data-hi="जुड़ें">जुड़ें</a></li>
-          <li><a href="#features" data-en="Features" data-hi="विशेषताएं">विशेषताएं</a></li>
-          <li><a href="#contact" data-en="Contact" data-hi="संपर्क">संपर्क</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <section class="hero" id="home">
-      <div class="hero-content container">
-        <h1 data-en="Modern Digital Solutions" data-hi="आधुनिक डिजिटल समाधान">
-          आधुनिक डिजिटल समाधान
-        </h1>
-        <p data-en="We help grow your business in the digital age"
-           data-hi="हम आपके बिज़नेस को डिजिटल युग में आगे बढ़ाते हैं">
-          हम आपके बिज़नेस को डिज़िटल युग में आगे बढ़ाते हैं
-        </p>
-        <div class="cta-buttons">
-          <a href="#community" class="btn btn-primary" data-en="Join Community" data-hi="कम्युनिटी जॉइन करें">
-            कम्युनिटी जॉइन करें
-          </a>
-          <a href="#services" class="btn btn-secondary" data-en="Learn More" data-hi="और जानें">
-            और जानें
-          </a>
-        </div>
+      <div class="menu-toggle" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
       </div>
-    </section>
 
-    <!-- ===== COMMUNITY / JOIN SECTION ===== -->
-    <section class="community" id="community">
-      <div class="container">
-        <!-- Live Counter -->
-        <div class="counter-box">
-          <div class="counter-num" id="memberCount">0</div>
-          <div class="counter-label" data-en="People already joined" data-hi="लोग पहले ही जुड़ चुके हैं">
-            लोग पहले ही जुड़ चुके हैं
-          </div>
-        </div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home" data-en="Home" data-hi="होम">होम</a></li>
+        <li><a href="#goals" data-en="Goals" data-hi="मकसद">मकसद</a></li>
+        <li><a href="#community" data-en="Join" data-hi="जुड़ें">जुड़ें</a></li>
+      </ul>
+    </nav>
+  </header>
 
-        <!-- Motto -->
-        <h2 class="section-title" data-en="Our Mission" data-hi="हमारा मकसद">
-          हमारा मकसद
-        </h2>
-        <p class="motto-text"
-           data-en="A company owned by its users. Equal contribution, equal profit. Everyone gets a voice, everyone gets a share."
-           data-hi="एक ऐसी कंपनी जो उसके यूज़र्स की होगी। बराबर योगदान, बराबर मुनाफ़ा। हर किसी को आवाज़, हर किसी को हिस्सा।">
-          एक ऐसी कंपनी जो उसके यूज़र्स की होगी। बराबर योगदान, बराबर मुनाफ़ा। हर किसी को आवाज़, हर किसी को हिस्सा।
-        </p>
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="home">
+    <div class="hero-content container">
+      <h1 data-en="A Chat App Owned by You" data-hi="एक चैट ऐप जो आपकी है">
+        एक चैट ऐप जो आपकी है
+      </h1>
+      <p data-en="Softzen is a next-generation chat application where users are the real owners. Equal contribution, equal profit — everyone gets a voice, everyone gets a share."
+         data-hi="Softzen एक नई पीढ़ी का चैट ऐप्लिकेशन है जिसमें असली मालिक यूज़र्स हैं। बराबर योगदान, बराबर मुनाफ़ा — हर किसी को आवाज़, हर किसी को हिस्सा।">
+        Softzen एक नई पीढ़ी का चैट ऐप्लिकेशन है जिसमें असली मालिक यूज़र्स हैं।
+        बराबर योगदान, बराबर मुनाफ़ा — हर किसी को आवाज़, हर किसी को हिस्सा।
+      </p>
 
-        <!-- Join Form -->
-        <form class="join-form" id="joinForm" autocomplete="off">
-          <div class="form-group">
-            <label for="uniqueId" data-en="Choose your Unique ID" data-hi="अपनी यूनिक ID चुनें">
-              अपनी यूनिक ID चुनें
-            </label>
-            <input
-              type="text"
-              id="uniqueId"
-              name="uniqueId"
-              placeholder="jaise: rahul_007"
-              minlength="3"
-              maxlength="20"
-              required
-            />
-            <small data-en="Only letters, numbers, underscore (_). This will be your permanent ID."
-                   data-hi="सिर्फ अक्षर, अंक, अंडरस्कोर (_)। यह आपकी स्थायी ID होगी।">
-              सिर्फ अक्षर, अंक, अंडरस्कोर (_)। यह आपकी स्थायी ID होगी।
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label for="password" data-en="Create a Password" data-hi="पासवर्ड बनाएं">
-              पासवर्ड बनाएं
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              minlength="6"
-              placeholder="कम से कम 6 अक्षर"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="joinMessage" data-en="Why do you want to join? (Optional)"
-                   data-hi="आप क्यों जुड़ना चाहते हैं? (वैकल्पिक)">
-              आप क्यों जुड़ना चाहते हैं? (वैकल्पिक)
-            </label>
-            <textarea
-              id="joinMessage"
-              name="message"
-              rows="3"
-              maxlength="300"
-              placeholder="आपका विचार..."
-            ></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="width:100%"
-                  data-en="Join Now" data-hi="अभी जुड़ें">
-            अभी जुड़ें
-          </button>
-        </form>
-
-        <div id="joinMessageBox" class="form-message"></div>
-
-        <p class="disclaimer"
-           data-en="Note: This is a social experiment. No money is being collected at this stage."
-           data-hi="सूचना: यह एक सोशल एक्सपेरिमेंट है। इस स्टेज पर कोई पैसा नहीं लिया जा रहा।">
-          सूचना: यह एक सोशल एक्सपेरिमेंट है। इस स्टेज पर कोई पैसा नहीं लिया जा रहा।
-        </p>
+      <div class="cta-buttons">
+        <a href="#community" class="btn btn-primary"
+           data-en="Join Community" data-hi="कम्युनिटी जॉइन करें">
+          कम्युनिटी जॉइन करें
+        </a>
+        <a href="#goals" class="btn btn-secondary"
+           data-en="See Our Goals" data-hi="हमारे मकसद देखें">
+          हमारे मकसद देखें
+        </a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ===== SERVICES ===== -->
-    <section class="services" id="services">
-      <div class="container">
-        <h2 class="section-title" data-en="Our Services" data-hi="हमारी सेवाएं">
-          हमारी सेवाएं
-        </h2>
-        <div class="services-grid">
-          <div class="service-card">
-            <div class="service-icon">💻</div>
-            <a href="https://portfolio.softzen.in/" target="_blank">
-              <h3 data-en="Web Development" data-hi="वेब डेवलपमेंट">वेब डेवलपमेंट</h3>
-              <p data-en="Modern and responsive websites that strengthen your business online."
-                 data-hi="आधुनिक और रिस्पॉन्सिव वेबसाइट्स जो आपके बिज़नेस को ऑनलाइन मजबूत बनाती हैं।">
-                आधुनिक और रिस्पॉन्सिव वेबसाइट्स जो आपके बिज़नेस को ऑनलाइन मजबूत बनाती हैं।
-              </p>
-            </a>
-          </div>
+  <!-- ========== GOALS SECTION ========== -->
+  <section class="goals" id="goals">
+    <div class="container">
+      <h2 class="section-title"
+          data-en="Our Goals & Vision"
+          data-hi="हमारे मकसद और सोच">
+        हमारे मकसद और सोच
+      </h2>
 
-          <div class="service-card coming-soon">
-            <div class="service-icon">📱</div>
-            <h3 data-en="Mobile Apps" data-hi="मोबाइल ऐप्स">मोबाइल ऐप्स</h3>
-            <p data-en="Excellent mobile application development services for iOS and Android."
-               data-hi="iOS और Android के लिए शानदार मोबाइल एप्लिकेशन डेवलपमेंट सेवाएं।">
-              iOS और Android के लिए शानदार मोबाइल एप्लिकेशन डेवलपमेंट सेवाएं।
-            </p>
-            <span class="soon-badge" data-en="Coming Soon" data-hi="जल्द आ रहा है">जल्द आ रहा है</span>
-          </div>
+      <p class="goals-intro"
+         data-en="We are building a chat application where every user is a real owner — not just a user. Here's how it works:"
+         data-hi="हम एक ऐसा चैट ऐप बना रहे हैं जहाँ हर यूज़र असली मालिक है — सिर्फ यूज़र नहीं। यह कैसे काम करेगा:">
+        हम एक ऐसा चैट ऐप बना रहे हैं जहाँ हर यूज़र असली मालिक है — सिर्फ यूज़र नहीं।
+        यह कैसे काम करेगा:
+      </p>
 
-          <div class="service-card coming-soon">
-            <div class="service-icon">☁️</div>
-            <h3 data-en="Cloud Solutions" data-hi="क्लाउड सॉल्यूशन">क्लाउड सॉल्यूशन</h3>
-            <p data-en="Secure and scalable cloud-based solutions to grow your business."
-               data-hi="सुरक्षित और स्केलेबल क्लाउड-बेस्ड सॉल्यूशन्स जो आपके बिज़नेस को बढ़ाएं।">
-              सुरक्षित और स्केलेबल क्लाउड-बेस्ड सॉल्यूशन्स जो आपके बिज़नेस को बढ़ाएं।
-            </p>
-            <span class="soon-badge" data-en="Coming Soon" data-hi="जल्द आ रहा है">जल्द आ रहा है</span>
-          </div>
+      <div class="goals-grid">
 
-          <div class="service-card coming-soon">
-            <div class="service-icon">🎨</div>
-            <h3 data-en="UI/UX Design" data-hi="UI/UX डिजाइन">UI/UX डिजाइन</h3>
-            <p data-en="User-friendly and attractive designs that your customers will love."
-               data-hi="यूजर-फ्रेंडली और आकर्षक डिजाइन जो आपके ग्राहकों को पसंद आएं।">
-              यूजर-फ्रेंडली और आकर्षक डिजाइन जो आपके ग्राहकों को पसंद आएं।
-            </p>
-            <span class="soon-badge" data-en="Coming Soon" data-hi="जल्द आ रहा है">जल्द आ रहा है</span>
-          </div>
-
-          <div class="service-card coming-soon">
-            <div class="service-icon">🔒</div>
-            <h3 data-en="Cyber Security" data-hi="साइबर सिक्योरिटी">साइबर सिक्योरिटी</h3>
-            <p data-en="Complete security and protection solutions for your digital assets."
-               data-hi="आपके डिजिटल एसेट्स की पूर्ण सुरक्षा और प्रोटेक्शन सॉल्यूशन्स।">
-              आपके डिजिटल एसेट्स की पूर्ण सुरक्षा और प्रोटेक्शन सॉल्यूशन्स।
-            </p>
-            <span class="soon-badge" data-en="Coming Soon" data-hi="जल्द आ रहा है">जल्द आ रहा है</span>
-          </div>
-
-          <div class="service-card coming-soon">
-            <div class="service-icon">📊</div>
-            <h3 data-en="Data Analytics" data-hi="डेटा एनालिटिक्स">डेटा एनालिटिक्स</h3>
-            <p data-en="Business insights and data-driven decision making solutions."
-               data-hi="बिज़नेस इनसाइट्स और डेटा-ड्रिवन डिसीजन मेकिंग सॉल्यूशन्स।">
-              बिज़नेस इनसाइट्स और डेटा-ड्रिवन डिसीजन मेकिंग सॉल्यूशन्स।
-            </p>
-            <span class="soon-badge" data-en="Coming Soon" data-hi="जल्द आ रहा है">जल्द आ रहा है</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="features" id="features">
-      <div class="container">
-        <h2 class="section-title" data-en="Our Features" data-hi="हमारी विशेषताएं">
-          हमारी विशेषताएं
-        </h2>
-        <div class="features-grid">
-          <div>
-            <div class="feature-item">
-              <div class="feature-icon">⚡</div>
-              <div class="feature-content">
-                <h3 data-en="Fast Delivery" data-hi="तेज़ डिलीवरी">तेज़ डिलीवरी</h3>
-                <p data-en="Guaranteed on-time project delivery" data-hi="समय पर प्रोजेक्ट डिलीवरी की गारंटी">
-                  समय पर प्रोजेक्ट डिलीवरी की गारंटी
-                </p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🎯</div>
-              <div class="feature-content">
-                <h3 data-en="Quality Assurance" data-hi="क्वालिटी असुरेंस">क्वालिटी असुरेंस</h3>
-                <p data-en="High quality guaranteed in every project" data-hi="हर प्रोजेक्ट में उच्च गुणवत्ता की गारंटी">
-                  हर प्रोजेक्ट में उच्च गुणवत्ता की गारंटी
-                </p>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="feature-item">
-              <div class="feature-icon">💬</div>
-              <div class="feature-content">
-                <h3 data-en="24/7 Support" data-hi="24/7 सपोर्ट">24/7 सपोर्ट</h3>
-                <p data-en="Always available customer support team" data-hi="हमेशा उपलब्ध कस्टमर सपोर्ट टीम">
-                  हमेशा उपलब्ध कस्टमर सपोर्ट टीम
-                </p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">💰</div>
-              <div class="feature-content">
-                <h3 data-en="Affordable Pricing" data-hi="किफायती मूल्य">किफायती मूल्य</h3>
-                <p data-en="Solutions according to your budget" data-hi="आपके बजट के अनुसार सॉल्यूशन्स">
-                  आपके बजट के अनुसार सॉल्यूशन्स
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="stats">
-      <div class="container">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <h3>0+</h3>
-            <p data-en="Happy Clients" data-hi="संतुष्ट ग्राहक">संतुष्ट ग्राहक</p>
-          </div>
-          <div class="stat-item">
-            <h3>0+</h3>
-            <p data-en="Completed Projects" data-hi="पूर्ण प्रोजेक्ट्स">पूर्ण प्रोजेक्ट्स</p>
-          </div>
-          <div class="stat-item">
-            <h3>1+</h3>
-            <p data-en="Team Experts" data-hi="टीम एक्सपर्ट्स">टीम एक्सपर्ट्स</p>
-          </div>
-          <div class="stat-item">
-            <h3>0+</h3>
-            <p data-en="Years of Experience" data-hi="वर्षों का अनुभव">वर्षों का अनुभव</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact" id="contact">
-      <div class="container">
-        <h2 class="section-title" data-en="Contact Us" data-hi="हमसे संपर्क करें">
-          हमसे संपर्क करें
-        </h2>
-        <form class="contact-form" id="contactForm">
-          <div class="form-group">
-            <label for="name" data-en="Name" data-hi="नाम">नाम</label>
-            <input type="text" id="name" name="name" required />
-          </div>
-          <div class="form-group">
-            <label for="email" data-en="Email" data-hi="ईमेल">ईमेल</label>
-            <input type="email" id="email" name="email" required />
-          </div>
-          <div class="form-group">
-            <label for="phone" data-en="Phone Number" data-hi="फ़ोन नंबर">फ़ोन नंबर</label>
-            <input type="tel" id="phone" name="phone" required />
-          </div>
-          <div class="form-group">
-            <label for="message" data-en="Message" data-hi="संदेश">संदेश</label>
-            <textarea id="message" name="message" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%"
-                  data-en="Send" data-hi="भेजें">
-            भेजें
-          </button>
-        </form>
-        <div id="formMessage" class="form-message"></div>
-      </div>
-    </section>
-
-    <footer>
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h3>Softzen</h3>
-            <p data-en="Leading provider of modern digital solutions and software services."
-               data-hi="आधुनिक डिजिटल समाधान और सॉफ्टवेयर सेवाएं प्रदान करने में अग्रणी।">
-              आधुनिक डिजिटल समाधान और सॉफ्टवेयर सेवाएं प्रदान करने में अग्रणी।
-            </p>
-          </div>
-          <div class="footer-section">
-            <h3 data-en="Quick Links" data-hi="त्वरित लिंक">त्वरित लिंक</h3>
-            <a href="#home" data-en="Home" data-hi="होम">होम</a>
-            <a href="#services" data-en="Services" data-hi="सेवाएं">सेवाएं</a>
-            <a href="#community" data-en="Join Us" data-hi="जुड़ें">जुड़ें</a>
-            <a href="#contact" data-en="Contact" data-hi="संपर्क">संपर्क</a>
-          </div>
-          <div class="footer-section">
-            <h3 data-en="Contact Information" data-hi="संपर्क जानकारी">संपर्क जानकारी</h3>
-            <p>📧 softzencompany@gmail.com</p>
-            <p>📞 +91-8954435677</p>
-            <p>📍 Lohaghat, Uttrakhand</p>
-          </div>
-        </div>
-        <div class="copyright">
-          <p data-en="&copy; 2026 Softzen. All rights reserved."
-             data-hi="&copy; 2026 Softzen. सर्वाधिकार सुरक्षित।">
-            &copy; 2026 Softzen. सर्वाधिकार सुरक्षित।
+        <!-- Goal 1 -->
+        <div class="goal-card">
+          <div class="goal-icon">💬</div>
+          <h3 data-en="A New Chat Application" data-hi="एक नया चैट ऐप्लिकेशन">
+            एक नया चैट ऐप्लिकेशन
+          </h3>
+          <p data-en="A modern chat app like WhatsApp and Telegram — but owned by the people who use it, not by one company."
+             data-hi="WhatsApp और Telegram जैसा आधुनिक चैट ऐप — लेकिन इसका मालिक यूज़र्स होंगे, कोई एक कंपनी नहीं।">
+            WhatsApp और Telegram जैसा आधुनिक चैट ऐप — लेकिन इसका मालिक यूज़र्स होंगे,
+            कोई एक कंपनी नहीं।
           </p>
         </div>
+
+        <!-- Goal 2 -->
+        <div class="goal-card">
+          <div class="goal-icon">🤝</div>
+          <h3 data-en="Equal Contribution, Equal Profit" data-hi="बराबर योगदान, बराबर मुनाफ़ा">
+            बराबर योगदान, बराबर मुनाफ़ा
+          </h3>
+          <p data-en="Every member contributes equally. Whatever profit the company earns, it gets distributed fairly among all members."
+             data-hi="हर मेंबर बराबर योगदान देगा। कंपनी जो भी मुनाफ़ा कमाएगी, वो सब मेंबर्स में निष्पक्ष रूप से बाँटा जाएगा।">
+            हर मेंबर बराबर योगदान देगा। कंपनी जो भी मुनाफ़ा कमाएगी,
+            वो सब मेंबर्स में निष्पक्ष रूप से बाँटा जाएगा।
+          </p>
+        </div>
+
+        <!-- Goal 3 -->
+        <div class="goal-card">
+          <div class="goal-icon">🏆</div>
+          <h3 data-en="Level System" data-hi="लेवल सिस्टम">
+            लेवल सिस्टम
+          </h3>
+          <p data-en="Members are divided into levels based on when they joined. Level 1 gets 50% profit, Level 2 gets 25%, Level 3 gets 15%. The remaining 10% is saved for future growth."
+             data-hi="मेंबर्स को जुड़ने के समय के हिसाब से लेवल में बाँटा जाएगा। Level 1 को 50% मुनाफ़ा, Level 2 को 25%, Level 3 को 15%। बाकी 10% भविष्य के विकास के लिए बचाया जाएगा।">
+            मेंबर्स को जुड़ने के समय के हिसाब से लेवल में बाँटा जाएगा।
+            Level 1 को 50% मुनाफ़ा, Level 2 को 25%, Level 3 को 15%।
+            बाकी 10% भविष्य के विकास के लिए बचाया जाएगा।
+          </p>
+        </div>
+
+        <!-- Goal 4 -->
+        <div class="goal-card">
+          <div class="goal-icon">🎯</div>
+          <h3 data-en="Early Members Get Priority" data-hi="शुरुआती मेंबर्स को प्राथमिकता">
+            शुरुआती मेंबर्स को प्राथमिकता
+          </h3>
+          <p data-en="The first members (Level 1) have the highest priority. They approve new features, give ideas, and their vote matters the most."
+             data-hi="पहले जुड़ने वाले मेंबर्स (Level 1) की सबसे ज़्यादा प्राथमिकता होगी। वो नए फीचर्स अप्रूव करेंगे, आइडिया देंगे, और उनका वोट सबसे ज़्यादा मायने रखेगा।">
+            पहले जुड़ने वाले मेंबर्स (Level 1) की सबसे ज़्यादा प्राथमिकता होगी।
+            वो नए फीचर्स अप्रूव करेंगे, आइडिया देंगे, और उनका वोट सबसे ज़्यादा मायने रखेगा।
+          </p>
+        </div>
+
+        <!-- Goal 5 -->
+        <div class="goal-card">
+          <div class="goal-icon">🪙</div>
+          <h3 data-en="Token Rewards" data-hi="टोकन रिवॉर्ड">
+            टोकन रिवॉर्ड
+          </h3>
+          <p data-en="The more you use the app, the more tokens you earn. Likes from other users also increase your tokens. Every week, revenue tokens are distributed to all members based on their level."
+             data-hi="जितना ज़्यादा आप ऐप इस्तेमाल करेंगे, उतने ज़्यादा टोकन मिलेंगे। दूसरों के लाइक्स से भी आपके टोकन बढ़ेंगे। हर हफ्ते, लेवल के हिसाब से सभी मेंबर्स को रेवेन्यू टोकन बाँटे जाएँगे।">
+            जितना ज़्यादा आप ऐप इस्तेमाल करेंगे, उतने ज़्यादा टोकन मिलेंगे।
+            दूसरों के लाइक्स से भी आपके टोकन बढ़ेंगे। हर हफ्ते, लेवल के हिसाब से
+            सभी मेंबर्स को रेवेन्यू टोकन बाँटे जाएँगे।
+          </p>
+        </div>
+
+        <!-- Goal 6 -->
+        <div class="goal-card">
+          <div class="goal-icon">🔗</div>
+          <h3 data-en="Web3 Based" data-hi="वेब3 आधारित">
+            वेब3 आधारित
+          </h3>
+          <p data-en="Built on Web3 technology. Fundraising and profit-sharing will be handled transparently on blockchain. Every member gets a unique ID and password."
+             data-hi="वेब3 तकनीक पर आधारित। फंडरेज़िंग और प्रॉफिट-शेयरिंग ब्लॉकचेन पर पारदर्शी तरीके से होगी। हर मेंबर को एक यूनिक ID और पासवर्ड मिलेगा।">
+            वेब3 तकनीक पर आधारित। फंडरेज़िंग और प्रॉफिट-शेयरिंग ब्लॉकचेन पर
+            पारदर्शी तरीके से होगी। हर मेंबर को एक यूनिक ID और पासवर्ड मिलेगा।
+          </p>
+        </div>
+
+        <!-- Goal 7 -->
+        <div class="goal-card">
+          <div class="goal-icon">💰</div>
+          <h3 data-en="Future Loans & Features" data-hi="भविष्य के लोन और फीचर्स">
+            भविष्य के लोन और फीचर्स
+          </h3>
+          <p data-en="The 10% reserved profit will be used to give loans to members and build new features. Decisions will be made by the community, not one person."
+             data-hi="10% रिज़र्व मुनाफ़ा मेंबर्स को लोन देने और नए फीचर्स बनाने में इस्तेमाल होगा। फैसले कम्युनिटी मिलकर लेगी, कोई एक व्यक्ति नहीं।">
+            10% रिज़र्व मुनाफ़ा मेंबर्स को लोन देने और नए फीचर्स बनाने में
+            इस्तेमाल होगा। फैसले कम्युनिटी मिलकर लेगी, कोई एक व्यक्ति नहीं।
+          </p>
+        </div>
+
+        <!-- Goal 8 -->
+        <div class="goal-card">
+          <div class="goal-icon">🚀</div>
+          <h3 data-en="Grow Together" data-hi="मिलकर आगे बढ़ें">
+            मिलकर आगे बढ़ें
+          </h3>
+          <p data-en="Our first target is 1 lakh members. Once we reach that, we will raise funds legally and launch the full chat application."
+             data-hi="हमारा पहला लक्ष्य 1 लाख मेंबर्स है। जैसे ही हम वहाँ पहुँचेंगे, हम कानूनी तौर पर फंड जुटाएँगे और पूरा चैट ऐप्लिकेशन लॉन्च करेंगे।">
+            हमारा पहला लक्ष्य 1 लाख मेंबर्स है। जैसे ही हम वहाँ पहुँचेंगे,
+            हम कानूनी तौर पर फंड जुटाएँगे और पूरा चैट ऐप्लिकेशन लॉन्च करेंगे।
+          </p>
+        </div>
+
       </div>
-    </footer>
+    </div>
+  </section>
 
-    <button class="lang-toggle" onclick="toggleLanguage()">
-      <span id="langIcon">🌐</span>
-      <span id="langText">English</span>
-    </button>
+  <!-- ========== COMMUNITY / JOIN ========== -->
+  <section class="community" id="community">
+    <div class="container">
 
-    <script src="js/language.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/register.js"></script>
-  </body>
+      <!-- Live Counter -->
+      <div class="counter-box">
+        <div class="counter-num" id="memberCount">0</div>
+        <div class="counter-label"
+             data-en="People already joined"
+             data-hi="लोग पहले ही जुड़ चुके हैं">
+          लोग पहले ही जुड़ चुके हैं
+        </div>
+      </div>
+
+      <!-- Motto -->
+      <h2 class="section-title"
+          data-en="Become a Founding Owner"
+          data-hi="फाउंडिंग ओनर बनें">
+        फाउंडिंग ओनर बनें
+      </h2>
+      <p class="motto-text"
+         data-en="Right now, we are only collecting interest. No money is being taken. Register today and become a Level 1 founding member with maximum priority and maximum profit share."
+         data-hi="अभी हम सिर्फ इंटरेस्ट जुटा रहे हैं। कोई पैसा नहीं लिया जा रहा। आज ही रजिस्टर करें और Level 1 फाउंडिंग मेंबर बनें — सबसे ज़्यादा प्राथमिकता और सबसे ज़्यादा मुनाफ़े के साथ।">
+        अभी हम सिर्फ इंटरेस्ट जुटा रहे हैं। कोई पैसा नहीं लिया जा रहा।
+        आज ही रजिस्टर करें और Level 1 फाउंडिंग मेंबर बनें —
+        सबसे ज़्यादा प्राथमिकता और सबसे ज़्यादा मुनाफ़े के साथ।
+      </p>
+
+      <!-- Join Form -->
+      <form class="join-form" id="joinForm" autocomplete="off">
+        <div class="form-group">
+          <label for="uniqueId"
+                 data-en="Choose your Unique ID"
+                 data-hi="अपनी यूनिक ID चुनें">
+            अपनी यूनिक ID चुनें
+          </label>
+          <input
+            type="text"
+            id="uniqueId"
+            placeholder="jaise: rahul_007"
+            minlength="3"
+            maxlength="20"
+            required
+          />
+          <small data-en="Only letters, numbers, underscore (_). This will be your permanent ID."
+                 data-hi="सिर्फ अक्षर, अंक, अंडरस्कोर (_)। यह आपकी स्थायी ID होगी।">
+            सिर्फ अक्षर, अंक, अंडरस्कोर (_)। यह आपकी स्थायी ID होगी।
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="password"
+                 data-en="Create a Password"
+                 data-hi="पासवर्ड बनाएं">
+            पासवर्ड बनाएं
+          </label>
+          <input
+            type="password"
+            id="password"
+            placeholder="कम से कम 6 अक्षर"
+            minlength="6"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="joinMessage"
+                 data-en="Why do you want to join? (Optional)"
+                 data-hi="आप क्यों जुड़ना चाहते हैं? (वैकल्पिक)">
+            आप क्यों जुड़ना चाहते हैं? (वैकल्पिक)
+          </label>
+          <textarea
+            id="joinMessage"
+            rows="3"
+            maxlength="300"
+            placeholder="आपका विचार..."
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full"
+                data-en="Join Now" data-hi="अभी जुड़ें">
+          अभी जुड़ें
+        </button>
+      </form>
+
+      <!-- Message Box -->
+      <div id="joinMessageBox" class="form-message"></div>
+
+      <p class="disclaimer"
+         data-en="Note: This is a social experiment. No money is being collected at this stage."
+         data-hi="सूचना: यह एक सोशल एक्सपेरिमेंट है। इस स्टेज पर कोई पैसा नहीं लिया जा रहा।">
+        सूचना: यह एक सोशल एक्सपेरिमेंट है। इस स्टेज पर कोई पैसा नहीं लिया जा रहा।
+      </p>
+
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer>
+    <div class="container">
+      <p data-en="© 2026 Softzen. All rights reserved."
+         data-hi="© 2026 Softzen. सर्वाधिकार सुरक्षित।">
+        © 2026 Softzen. सर्वाधिकार सुरक्षित।
+      </p>
+    </div>
+  </footer>
+
+  <!-- ========== LANGUAGE TOGGLE BUTTON ========== -->
+  <button class="lang-toggle" onclick="toggleLanguage()">
+    <span id="langIcon">🌐</span>
+    <span id="langText">English</span>
+  </button>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="js/language.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/register.js"></script>
+</body>
 </html>
