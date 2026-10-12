@@ -7,7 +7,6 @@ function Header() {
   const { setActiveChat, unreadCounts } = useChatStore();
   const navigate = useNavigate();
 
-  // Total unread = general + saare DM
   const totalUnread = Object.values(unreadCounts).reduce(
     (sum, n) => sum + (n || 0),
     0
@@ -45,12 +44,15 @@ function Header() {
             <>
               <button
                 onClick={goToChat}
-                className="relative text-sm font-medium text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2"
+                className="relative text-sm font-medium text-gray-600 hover:text-brand-500 px-2 sm:px-3 py-2 flex items-center gap-2"
               >
-                Chat
+                <span>Chat</span>
+
+                {/* 🟡 YELLOW DOT */}
                 {totalUnread > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md animate-pulse">
-                    {totalUnread > 99 ? '99+' : totalUnread}
+                  <span className="relative flex">
+                    <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-yellow-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-400 shadow-md" />
                   </span>
                 )}
               </button>
