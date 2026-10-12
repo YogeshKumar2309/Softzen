@@ -20,7 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  // ping/health ke logs skip karo (spam avoid karne ke liye)
+  if (req.path !== '/ping' && req.path !== '/health') {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  }
   next();
 });
 
@@ -33,7 +36,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.get('/ping', (req, res) => res.send('pong'));
+// Ping endpoint (cron isko hit karega)
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
 
 // Routes
 app.use('/api/contact', contactLimiter, contactRoutes);
@@ -46,6 +52,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      ping: '/ping',
       contact: '/api/contact',
       userRegister: '/api/user/register',
       userCount: '/api/user/count'
@@ -53,8 +60,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404
-// ✅ सही - Express 5 compatible
+// 404 - Express 5 compatible
 app.use('/{*splat}', (req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.originalUrl });
 });
@@ -65,12 +71,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
-// Start
+// Start server
 app.listen(PORT, () => {
   console.log('='.repeat(50));
   console.log(`🚀 Softzen Backend running on port ${PORT}`);
   console.log(`🌐 Health: http://localhost:${PORT}/health`);
+  console.log(`📡 Ping: http://localhost:${PORT}/ping`);
   console.log('='.repeat(50));
+
+  // Cron job start karo
   startKeepAlive();
 });
 
