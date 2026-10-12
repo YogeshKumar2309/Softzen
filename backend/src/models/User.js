@@ -13,12 +13,13 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    minlength: 6
   },
   message: {
     type: String,
     trim: true,
-    maxlength: 500,
+    maxlength: 300,
     default: ''
   },
   level: {
@@ -27,12 +28,13 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Hash password before save
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+// ✅ Mongoose 7+ compatible pre-save hook
+// next parameter hata diya, bas return kar diya
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 userSchema.methods.comparePassword = async function (candidate) {

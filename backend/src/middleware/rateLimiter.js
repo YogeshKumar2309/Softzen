@@ -1,15 +1,14 @@
-// middleware/rateLimiter.js
 const rateLimit = require('express-rate-limit');
 
 const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // same IP can only make 5 requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: {
     success: false,
-    message: 'Too many requests from this IP. Please try again later.'
+    message: 'Bahut zyada requests. 15 minute baad try karein.'
   },
-  standardHeaders: true, // Return rate limit info in headers
-  legacyHeaders: false,   // Disable X-RateLimit-* headers
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 module.exports = contactLimiter;
