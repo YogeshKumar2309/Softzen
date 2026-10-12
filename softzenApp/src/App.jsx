@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
+import { useSocket } from './hooks/useSocket';
 import Header from './components/Header';
 import UsersPage from './pages/UsersPage';
 import LoginPage from './pages/LoginPage';
@@ -11,9 +13,20 @@ function PrivateRoute({ children }) {
   return token ? children : <Navigate to="/login" />;
 }
 
+function SocketProvider() {
+  // ✅ Ye App level par hai — har page par socket chalega
+  useSocket();
+  return null;
+}
+
 function App() {
+  const token = useAuthStore((s) => s.token);
+
   return (
     <BrowserRouter>
+      {/* Socket provider — sirf jab logged in ho */}
+      {token && <SocketProvider />}
+
       <Routes>
         <Route
           path="/"
