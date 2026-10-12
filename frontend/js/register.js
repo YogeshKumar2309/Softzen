@@ -1,6 +1,6 @@
 // ====== Backend URL ======
 // Local MongoDB ke liye:
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE = 'https://softzen-mdyx.onrender.com/api';
 
 // Deploy ke baad ye use karna:
 // const API_BASE = 'https://softzen-mdyx.onrender.com/api';
