@@ -331,7 +331,17 @@ async function doChat(history, text) {
         console.log(`🤖 Trying model: ${model}${round > 1 ? ` (round ${round})` : ''}`);
 
         const response = await callModel({ client, provider, model, messages });
-        const reply = cleanReply(response.choices?.[0]?.message?.content);
+
+        // OpenRouter kabhi kabhi HTTP 200 ke saath error body bhejta hai (choices nahi hote)
+        if (!response?.choices?.length) {
+          const bodyErr = new Error(
+            response?.error?.message || 'Response me choices nahi aaye (provider error)'
+          );
+          bodyErr.status = Number(response?.error?.code) || 502;
+          throw bodyErr;
+        }
+
+        const reply = cleanReply(response.choices[0]?.message?.content);
 
         if (!reply) {
           const emptyErr = new Error(
