@@ -9,9 +9,12 @@ const messageRoutes = require('./routes/message');
 const contactLimiter = require('./middleware/rateLimiter');
 const { startKeepAlive } = require('./utils/keepAlive');
 const { initSocket } = require('./socket/chat');
+const aiRoutes = require('./routes/ai');
 
 dotenv.config();
-connectDB();
+connectDB().then(() => {
+  ensureRiyaExists();
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -46,6 +49,7 @@ app.get('/ping', (req, res) => res.send('pong'));
 app.use('/api/contact', contactLimiter, contactRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/message', messageRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/', (req, res) => {
   res.json({

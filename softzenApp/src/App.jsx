@@ -6,6 +6,7 @@ import UsersPage from './pages/UsersPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
+import RiyaPage from './pages/RiyaPage';
 
 function PrivateRoute({ children }) {
   const token = useAuthStore((s) => s.token);
@@ -36,6 +37,14 @@ function App() {
         <Route
           path="/chat/:uniqueId"
           element={<PrivateRoute><ChatPage /></PrivateRoute>}
+        />
+        <Route
+          path="/riya"
+          element={
+            <PrivateRoute>
+              <RiyaPage />
+            </PrivateRoute>
+          }
         />
       </Routes>
     </BrowserRouter>

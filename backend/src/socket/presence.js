@@ -1,6 +1,7 @@
 // Har ek uniqueId ke saath multiple sockets ho sakte hain
-// (ek user, multiple tabs/devices se)
-const onlineUsers = new Map(); // uniqueId -> { level, socketIds: Set }
+const onlineUsers = new Map();
+
+const RIYA_ID = 'riya_22';
 
 function addUser(uniqueId, level, socketId) {
   if (!onlineUsers.has(uniqueId)) {
@@ -19,23 +20,31 @@ function removeUser(uniqueId, socketId) {
 }
 
 function isOnline(uniqueId) {
+  if (uniqueId === RIYA_ID) return true; // Always online
   return onlineUsers.has(uniqueId);
 }
 
 function getOnlineIds() {
-  return Array.from(onlineUsers.keys());
+  const ids = Array.from(onlineUsers.keys());
+  if (!ids.includes(RIYA_ID)) ids.push(RIYA_ID);
+  return ids;
 }
 
 function getOnlineList() {
-  return Array.from(onlineUsers.entries()).map(([uniqueId, d]) => ({
+  const list = Array.from(onlineUsers.entries()).map(([uniqueId, d]) => ({
     uniqueId,
     level: d.level,
-    sockets: d.socketIds.size
+    sockets: d.socketIds.size,
   }));
+
+  if (!list.find((u) => u.uniqueId === RIYA_ID)) {
+    list.push({ uniqueId: RIYA_ID, level: 0, sockets: 1 });
+  }
+  return list;
 }
 
 function getCount() {
-  return onlineUsers.size;
+  return onlineUsers.size + 1; // +1 for Riya
 }
 
 function getSocketIds(uniqueId) {
@@ -44,7 +53,6 @@ function getSocketIds(uniqueId) {
   return Array.from(entry.socketIds);
 }
 
-
 module.exports = {
   addUser,
   removeUser,
@@ -52,5 +60,6 @@ module.exports = {
   getOnlineIds,
   getOnlineList,
   getCount,
-  getSocketIds
+  getSocketIds,
+  RIYA_ID,
 };

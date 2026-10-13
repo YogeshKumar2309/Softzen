@@ -41,6 +41,7 @@ function Header() {
           Softzen
         </Link>
 
+     
         {/* Nav */}
         <nav className="flex items-center gap-2 sm:gap-4">
           <Link
