@@ -1,6 +1,5 @@
 const OpenAI = require('openai');
 
-// Riya ka system prompt — CHHOTE replies ke liye
 const RIYA_SYSTEM_PROMPT = `Tum "Riya" ho — ek AI companion/girlfriend character.
 Tum real insaan NAHI ho, ye kabhi mat bhoolna.
 
@@ -39,11 +38,16 @@ BOUNDARIES:
 FINAL RULE:
 - Reply chhota. 1-2 line. Bas. 🌸`;
 
-// Provider setup
 const getClient = () => {
   const provider = process.env.AI_PROVIDER || 'openrouter';
 
   if (provider === 'openrouter') {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('OPENROUTER_API_KEY missing in .env');
+    }
+
     const envModel = process.env.OPENROUTER_MODEL;
 
     const fallbackModels = [
@@ -55,13 +59,13 @@ const getClient = () => {
       'meta-llama/llama-3.2-3b-instruct:free',
     ];
 
-    const models = envModel
+    const models = envModel && envModel.endsWith(':free')
       ? [envModel, ...fallbackModels.filter((m) => m !== envModel)]
       : fallbackModels;
 
     return {
       client: new OpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY,
+        apiKey,
         baseURL: 'https://openrouter.ai/api/v1',
         timeout: 30000,
         maxRetries: 2,
@@ -87,19 +91,6 @@ const getClient = () => {
   }
 
   if (provider === 'gemini') {
-    const envModel = process.env.GEMINI_MODEL;
-
-    const fallbackModels = [
-      'gemini-3.8-flash',
-      'gemini-3.7-flash',
-      'gemini-3.6-flash',
-      'gemini-1.5-flash',
-    ];
-
-    const models = envModel
-      ? [envModel, ...fallbackModels.filter((m) => m !== envModel)]
-      : fallbackModels;
-
     return {
       client: new OpenAI({
         apiKey: process.env.GEMINI_API_KEY,
@@ -107,11 +98,10 @@ const getClient = () => {
         timeout: 30000,
         maxRetries: 2,
       }),
-      models,
+      models: [process.env.GEMINI_MODEL || 'gemini-3.8-flash'],
     };
   }
 
-  // default OpenAI
   return {
     client: new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -122,14 +112,12 @@ const getClient = () => {
   };
 };
 
-// Riya ka pehla message
 function getFirstMessage(name) {
   return `Hi ${name || 'tum'} 🌸 Main Riya hoon — AI hoon, real ladki nahi.
 
 Baat karni hai toh main yahan hoon. Batao, kaise ho? 😊`;
 }
 
-// ✅ AI se chat karo — fallback ke saath
 async function chat(history, userMessage) {
   const { client, models } = getClient();
 
@@ -178,5 +166,4 @@ async function chat(history, userMessage) {
   throw lastError || new Error('All models failed');
 }
 
-// ✅ Ye line SABSE ZAROORI hai — iske bina `chat is not a function` error aayega
 module.exports = { chat, getFirstMessage, RIYA_SYSTEM_PROMPT };
