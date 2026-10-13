@@ -25,7 +25,21 @@ const PORT = process.env.PORT || 5001;
 const io = initSocket(server);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://softzen.vercel.app',
+    'https://softzen-3by2.vercel.app',
+    'https://softzen.in',
+    'https://www.softzen.in',
+    'https://chat.softzen.in',
+    // 'https://chat-app-wheat-nine-39.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
