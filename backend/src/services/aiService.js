@@ -6,21 +6,32 @@ const OpenAI = require('openai');
 
 const CONFIG = {
   temperature: 0.9,
-  // Reasoning models (Nemotron etc.) can burn tokens on thinking.
-  // 80 was too low -> empty/cut replies. Prompt already keeps replies short.
-  maxTokens: Number(process.env.AI_MAX_TOKENS) || 250,
+  // Reasoning models (Nemotron etc.) thinking me tokens kharch kar sakte hain.
+  maxTokens: Number(process.env.AI_MAX_TOKENS) || 300,
   timeoutMs: Number(process.env.AI_TIMEOUT_MS) || 20000,
   historyLimit: 20,
   maxMessageChars: 1000,
+  // Free tier ki limit poore API key pe lagti hai (per user nahi),
+  // isliye ek saath bahut saari requests mat bhejo.
+  maxConcurrent: Number(process.env.AI_MAX_CONCURRENT) || 3,
+  // Sab models fail hone pe kitni baar poori list dobara try karni hai
+  rounds: Number(process.env.AI_RETRY_ROUNDS) || 2,
+  retryDelayMs: Number(process.env.AI_RETRY_DELAY_MS) || 1500,
 };
 
-// Free models disappear often -> keep this list fresh, and always end with
-// `openrouter/free` (router that picks any available free model).
+// Free models disappear often -> list fresh rakho, aur end me `openrouter/free`
+// (router jo koi bhi available free model chun leta hai).
 const DEFAULT_FREE_MODELS = [
   'nvidia/nemotron-3-ultra-550b-a55b:free',
   'google/gemma-4-31b-it:free', // slug verify kar lena: openrouter.ai/models (free filter)
   'openrouter/free',
 ];
+
+// Ye router hai, ise cooldown me mat daalo
+const NEVER_COOLDOWN = new Set(['openrouter/free']);
+
+// Controller me ye reply dikha sakte ho jab ALL_MODELS_FAILED aaye
+const FALLBACK_REPLY = 'Riya thodi busy hai abhi 🌸 Ek minute baad baat karein?';
 
 /* ------------------------------------------------------------------ */
 /* Prompt                                                              */
@@ -87,8 +98,8 @@ function parseModelList(...lists) {
 
 function buildClient() {
   const provider = (process.env.AI_PROVIDER || 'openrouter').toLowerCase();
-  // We do fallback ourselves, so SDK retries are off
-  // (otherwise: timeout x retries x models = very long waits).
+  // Fallback hum khud sambhalte hain, isliye SDK retries band
+  // (warna timeout x retries x models = bahut lamba wait).
   const common = { timeout: CONFIG.timeoutMs, maxRetries: 0 };
 
   if (provider === 'openrouter') {
@@ -97,6 +108,8 @@ function buildClient() {
 
     const csv = (process.env.OPENROUTER_MODELS || '').split(',');
     const single = [process.env.OPENROUTER_MODEL];
+    // Optional sasta paid model, sabse last me: free sab fail ho to bhi Riya chale
+    const paid = [process.env.OPENROUTER_FALLBACK_MODEL];
 
     return {
       provider,
@@ -109,8 +122,8 @@ function buildClient() {
           'X-Title': 'Softzen Chat',
         },
       }),
-      // priority: OPENROUTER_MODELS list > OPENROUTER_MODEL > defaults
-      models: parseModelList(csv, single, DEFAULT_FREE_MODELS),
+      // priority: OPENROUTER_MODELS > OPENROUTER_MODEL > defaults > paid fallback
+      models: parseModelList(csv, single, DEFAULT_FREE_MODELS, paid),
     };
   }
 
@@ -155,16 +168,16 @@ function getClient() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Model cooldown (dead/rate-limited models ko baar-baar try nahi)     */
+/* Cooldown (dead/rate-limited models ko baar-baar try nahi)           */
 /* ------------------------------------------------------------------ */
 
 const cooldownUntil = new Map(); // model -> timestamp
+const reasoningUnsupported = new Set(); // models jinhone `reasoning` param reject kiya
 
 function cooldownFor(status) {
-  if (status === 404) return 30 * 60 * 1000; // model removed / wrong slug
-  if (status === 402) return 30 * 60 * 1000; // credits issue
-  if (status === 429) return 2 * 60 * 1000; // rate limit
-  return 60 * 1000; // timeout, 5xx, empty reply
+  if (status === 404 || status === 402) return 30 * 60 * 1000; // removed / credits
+  if (status === 429) return 60 * 1000; // rate limit
+  return 30 * 1000; // timeout, 5xx, empty reply
 }
 
 function pickCandidates(models) {
@@ -175,8 +188,49 @@ function pickCandidates(models) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Concurrency control                                                 */
+/* ------------------------------------------------------------------ */
+
+// 1) Per-user queue: ek user ke messages order me ek ek karke process hon
+const userQueues = new Map();
+
+function runExclusive(key, task) {
+  if (!key) return task();
+  const prev = userQueues.get(key) || Promise.resolve();
+  const next = prev.catch(() => {}).then(task);
+  userQueues.set(key, next);
+  next
+    .finally(() => {
+      if (userQueues.get(key) === next) userQueues.delete(key);
+    })
+    .catch(() => {});
+  return next;
+}
+
+// 2) Global limit: ek saath max N AI calls (free tier 429 se bachne ke liye)
+let activeCalls = 0;
+const waiters = [];
+
+async function acquire() {
+  if (activeCalls < CONFIG.maxConcurrent) {
+    activeCalls++;
+    return;
+  }
+  await new Promise((resolve) => waiters.push(resolve));
+  activeCalls++;
+}
+
+function release() {
+  activeCalls--;
+  const next = waiters.shift();
+  if (next) next();
+}
+
+/* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function cleanReply(text) {
   if (typeof text !== 'string') return '';
@@ -224,62 +278,98 @@ function getFirstMessage(name) {
 Baat karni hai toh main yahan hoon. Batao, kaise ho? 😊`;
 }
 
+// Retry ke layak errors: rate limit, server error, timeout, empty reply
+function isRetryable(err) {
+  const s = err?.status || 0;
+  return s === 0 || s === 408 || s === 429 || s >= 500;
+}
+
+/* ------------------------------------------------------------------ */
+/* One model call (reasoning param auto-fallback ke saath)             */
+/* ------------------------------------------------------------------ */
+
+async function callModel({ client, provider, model, messages }) {
+  const body = {
+    model,
+    messages,
+    temperature: CONFIG.temperature,
+    max_tokens: CONFIG.maxTokens,
+  };
+
+  const useReasoning = provider === 'openrouter' && !reasoningUnsupported.has(model);
+  if (useReasoning) body.reasoning = { effort: 'low', exclude: true };
+
+  try {
+    return await client.chat.completions.create(body);
+  } catch (err) {
+    // Model ne `reasoning` param reject kiya -> bina uske turant dobara try
+    if (useReasoning && err.status === 400) {
+      console.warn(`ℹ️ ${model} ne reasoning param reject kiya, bina uske retry`);
+      reasoningUnsupported.add(model);
+      delete body.reasoning;
+      return client.chat.completions.create(body);
+    }
+    throw err;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Chat                                                                */
 /* ------------------------------------------------------------------ */
 
-async function chat(history, userMessage) {
-  const text = String(userMessage ?? '').trim();
-  if (!text) throw new Error('Empty message');
-
+async function doChat(history, text) {
   const { client, models, provider } = getClient();
   const messages = buildMessages(history, text);
-  const candidates = pickCandidates(models);
 
   let lastError = null;
+  let fatal = false;
 
-  for (const model of candidates) {
-    const started = Date.now();
-    try {
-      console.log(`🤖 Trying model: ${model}`);
+  for (let round = 1; round <= CONFIG.rounds && !fatal; round++) {
+    for (const model of pickCandidates(models)) {
+      const started = Date.now();
+      try {
+        console.log(`🤖 Trying model: ${model}${round > 1 ? ` (round ${round})` : ''}`);
 
-      const body = {
-        model,
-        messages,
-        temperature: CONFIG.temperature,
-        max_tokens: CONFIG.maxTokens,
-      };
+        const response = await callModel({ client, provider, model, messages });
+        const reply = cleanReply(response.choices?.[0]?.message?.content);
 
-      // OpenRouter-only: thinking tokens response me na aayein
-      if (provider === 'openrouter') {
-        body.reasoning = { effort: 'low', exclude: true };
+        if (!reply) {
+          const emptyErr = new Error(
+            `Empty reply (finish_reason: ${response.choices?.[0]?.finish_reason || 'unknown'})`
+          );
+          emptyErr.status = 0;
+          throw emptyErr;
+        }
+
+        const tokens = response.usage?.total_tokens || 0;
+        console.log(`✅ ${model} (${Date.now() - started}ms, ${tokens} tokens)`);
+        return { reply, tokens, model };
+      } catch (err) {
+        const status = err.status || 0;
+        console.warn(
+          `⚠️ ${model} failed [${status || err.name}]: ${(err.message || '').slice(0, 120)}`
+        );
+        lastError = err;
+
+        // Key galat ya access nahi -> baaki models se bhi fayda nahi
+        if (status === 401 || status === 403) {
+          console.error('❌ API key galat hai ya access nahi hai');
+          fatal = true;
+          break;
+        }
+
+        if (!NEVER_COOLDOWN.has(model)) {
+          cooldownUntil.set(model, Date.now() + cooldownFor(status));
+        }
       }
+    }
 
-      const response = await client.chat.completions.create(body);
-
-      const reply = cleanReply(response.choices?.[0]?.message?.content);
-      if (!reply) {
-        const emptyErr = new Error('Empty reply from model');
-        emptyErr.status = 0;
-        throw emptyErr;
-      }
-
-      const tokens = response.usage?.total_tokens || 0;
-      console.log(`✅ ${model} (${Date.now() - started}ms, ${tokens} tokens)`);
-      return { reply, tokens, model };
-    } catch (err) {
-      const status = err.status || 0;
-      const msg = (err.message || '').slice(0, 120);
-      console.warn(`⚠️ ${model} failed [${status || err.name}]: ${msg}`);
-      lastError = err;
-
-      // Key galat ya access nahi -> baaki models se bhi fayda nahi
-      if (status === 401 || status === 403) {
-        console.error('❌ API key galat hai ya access nahi hai');
-        break;
-      }
-
-      cooldownUntil.set(model, Date.now() + cooldownFor(status));
+    // Poori list fail hui: thoda ruk ke dobara (sirf temporary errors pe)
+    if (!fatal && round < CONFIG.rounds && isRetryable(lastError)) {
+      console.warn(`⏳ Sab models fail, ${CONFIG.retryDelayMs}ms baad dobara try...`);
+      await sleep(CONFIG.retryDelayMs);
+    } else {
+      break;
     }
   }
 
@@ -290,4 +380,23 @@ async function chat(history, userMessage) {
   throw finalErr;
 }
 
-module.exports = { chat, getFirstMessage, RIYA_SYSTEM_PROMPT };
+/**
+ * @param {Array}  history      [{role, content}, ...]
+ * @param {string} userMessage  user ka naya message
+ * @param {string} [userId]     optional: same user ke messages queue me chalenge
+ */
+async function chat(history, userMessage, userId) {
+  const text = String(userMessage ?? '').trim();
+  if (!text) throw new Error('Empty message');
+
+  return runExclusive(userId ? String(userId) : null, async () => {
+    await acquire();
+    try {
+      return await doChat(history, text);
+    } finally {
+      release();
+    }
+  });
+}
+
+module.exports = { chat, getFirstMessage, RIYA_SYSTEM_PROMPT, FALLBACK_REPLY };
