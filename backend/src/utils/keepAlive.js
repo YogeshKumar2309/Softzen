@@ -1,70 +1,65 @@
-const cron = require('node-cron');
-const https = require('https');
-const http = require('http');
-
-/**
- * Keep-alive cron job
- * Har 15 minute me apne server ke /ping endpoint ko hit karta hai
- * Render free tier par server 15 min inactivity ke baad sota hai
- * Isliye ye cron use hota hai
- */
-
-let cronTask = null;
-
+// Keep-alive function to prevent Render free tier from sleeping
 const startKeepAlive = () => {
-  // Render par RENDER_EXTERNAL_URL automatically milta hai
-  // Local me manually set karna padta hai
-  const URL = process.env.RENDER_EXTERNAL_URL
-    || process.env.RENDER_URL
-    || process.env.APP_URL
-    || `http://localhost:${process.env.PORT || 5001}`;
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+  const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes (Render sleeps after 15 min inactivity)
 
-  const isLocal = URL.includes('localhost') || URL.includes('127.0.0.1');
+  if (!RENDER_URL) {
+    console.log('⚠️  RENDER_EXTERNAL_URL not set in environment variables');
+    console.log('💡 Self-ping disabled. Please set up external cron job:');
+    console.log('   - UptimeRobot: https://uptimerobot.com');
+    console.log('   - Cron-job.org: https://cron-job.org');
+    return;
+  }
 
-  console.log('🔔 Keep-alive cron registered for:', URL);
-  console.log('⏰ Schedule: every 15 minutes');
+  console.log('✅ Self-ping enabled');
+  console.log(`📍 Ping URL: ${RENDER_URL}/health`);
+  console.log(`⏱️  Interval: Every 14 minutes`);
 
-  // Cron expression: "*/15 * * * *" = har 15 minute me
-  // Format: minute hour day month weekday
-  cronTask = cron.schedule('*/15 * * * *', () => {
-    const url = `${URL}/ping`;
-    const client = url.startsWith('https') ? https : http;
-
-    const startTime = Date.now();
-
-    client.get(url, (res) => {
-      const elapsed = Date.now() - startTime;
-      console.log(`💓 [${new Date().toISOString()}] Ping ${url} → ${res.statusCode} (${elapsed}ms)`);
-      res.resume(); // response body consume karo
-    }).on('error', (err) => {
-      console.error(`❌ [${new Date().toISOString()}] Ping failed: ${err.message}`);
-    });
-  });
-
-  // Server start hote hi ek immediate ping bhejo
+  // Initial ping after 1 minute
   setTimeout(() => {
-    const url = `${URL}/ping`;
-    const client = url.startsWith('https') ? https : http;
+    console.log('🔄 Starting first self-ping...');
+    pingServer();
+  }, 60 * 1000);
 
-    client.get(url, (res) => {
-      console.log(`💓 Initial ping → ${res.statusCode}`);
-      res.resume();
-    }).on('error', (err) => {
-      console.error(`❌ Initial ping failed: ${err.message}`);
+  // Regular ping every 14 minutes
+  setInterval(() => {
+    pingServer();
+  }, PING_INTERVAL);
+};
+
+const pingServer = async () => {
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+  
+  try {
+    const startTime = Date.now();
+    const response = await fetch(`${RENDER_URL}/health`);
+    const data = await response.json();
+    const responseTime = Date.now() - startTime;
+    
+    const timestamp = new Date().toLocaleString('en-IN', { 
+      timeZone: 'Asia/Kolkata',
+      hour12: true 
     });
-  }, 5000);
-
-  // Optional: agar local ho, to har 15 min me log mat dikhao
-  if (isLocal) {
-    console.log('ℹ️  Local mode: ping har 15 min me chalega');
+    
+    console.log('━'.repeat(50));
+    console.log(`✅ Self-Ping Successful`);
+    console.log(`🕐 Time: ${timestamp}`);
+    console.log(`⚡ Response: ${responseTime}ms`);
+    console.log(`📊 Status: ${data.status}`);
+    console.log(`⏱️  Uptime: ${Math.floor(data.uptime / 60)} minutes`);
+    console.log('━'.repeat(50));
+  } catch (error) {
+    const timestamp = new Date().toLocaleString('en-IN', { 
+      timeZone: 'Asia/Kolkata',
+      hour12: true 
+    });
+    
+    console.error('━'.repeat(50));
+    console.error(`❌ Self-Ping Failed`);
+    console.error(`🕐 Time: ${timestamp}`);
+    console.error(`💥 Error: ${error.message}`);
+    console.error('━'.repeat(50));
   }
 };
 
-const stopKeepAlive = () => {
-  if (cronTask) {
-    cronTask.stop();
-    console.log('🛑 Keep-alive cron stopped');
-  }
-};
-
-module.exports = { startKeepAlive, stopKeepAlive };
+module.exports = { startKeepAlive };
