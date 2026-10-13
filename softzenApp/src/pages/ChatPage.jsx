@@ -5,7 +5,6 @@ import { useChatStore } from '../stores/chatStore';
 import { api } from '../lib/api';
 import ChatSidebar from '../components/ChatSidebar';
 import ChatWindow from '../components/ChatWindow';
-import { requestNotificationPermission } from '../lib/notify';
 
 function ChatPage() {
   const { user, token } = useAuthStore();
@@ -17,11 +16,6 @@ function ChatPage() {
     if (!token) navigate('/login');
   }, [token, navigate]);
 
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
-
-  // Active chat change → messages load + read mark
   useEffect(() => {
     if (!token || !activeChat) return;
 
@@ -49,14 +43,16 @@ function ChatPage() {
 
   return (
     <div className="h-screen flex overflow-hidden">
+      {/* Sidebar — mobile slide-in, desktop fixed */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-30 w-72 transform transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        } lg:translate-x-0 lg:transform-none`}
       >
         <ChatSidebar onClose={() => setSidebarOpen(false)} />
       </aside>
 
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
@@ -64,7 +60,8 @@ function ChatPage() {
         />
       )}
 
-      <main className="flex-1 min-w-0">
+      {/* Main chat window */}
+      <main className="flex-1 min-w-0 overflow-hidden">
         <ChatWindow onMenuClick={() => setSidebarOpen(true)} />
       </main>
     </div>

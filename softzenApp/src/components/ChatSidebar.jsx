@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../stores/chatStore';
 import { useAuthStore } from '../stores/authStore';
 
@@ -11,24 +12,22 @@ function ChatSidebar({ onClose }) {
     unreadCounts,
   } = useChatStore();
   const me = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
 
   const onlineIds = new Set(onlineUsers.map((u) => u.uniqueId));
 
-  // Conversations set me merge karo (localStorage + API)
   const conversationMap = new Map();
 
-  // Pehle conversations se
   conversations.forEach((c) => {
-    if (c.uniqueId !== me?.uniqueId) {
+    if (c.uniqueId !== me?.uniqueId && c.uniqueId !== 'riya_22') {
       conversationMap.set(c.uniqueId, { ...c });
     }
   });
 
-  // Phir messagesByChat se bhi add karo (agar koi missing ho)
   Object.keys(messagesByChat).forEach((key) => {
     if (key.startsWith('dm:')) {
       const u = key.slice(3);
-      if (u === me?.uniqueId) return;
+      if (u === me?.uniqueId || u === 'riya_22') return;
 
       const msgs = messagesByChat[key];
       const last = msgs?.[msgs.length - 1];
@@ -44,9 +43,12 @@ function ChatSidebar({ onClose }) {
     }
   });
 
-  // Online users bhi include karo
   onlineUsers.forEach((u) => {
-    if (u.uniqueId !== me?.uniqueId && !conversationMap.has(u.uniqueId)) {
+    if (
+      u.uniqueId !== me?.uniqueId &&
+      u.uniqueId !== 'riya_22' &&
+      !conversationMap.has(u.uniqueId)
+    ) {
       conversationMap.set(u.uniqueId, {
         uniqueId: u.uniqueId,
         lastMessage: 'Chat shuru karo',
@@ -56,7 +58,6 @@ function ChatSidebar({ onClose }) {
     }
   });
 
-  // Sort: online first, phir latest message time
   const sorted = Array.from(conversationMap.values()).sort((a, b) => {
     const ao = onlineIds.has(a.uniqueId);
     const bo = onlineIds.has(b.uniqueId);
@@ -69,14 +70,19 @@ function ChatSidebar({ onClose }) {
     onClose?.();
   };
 
+  const goHome = () => {
+    navigate('/');
+    onClose?.();
+  };
+
   const generalUnread = unreadCounts['general'] || 0;
+  const riyaUnread = unreadCounts['dm:riya_22'] || 0;
 
   const formatTime = (iso) => {
     if (!iso) return '';
     const d = new Date(iso);
     const now = new Date();
-    const diffMs = now - d;
-    const diffH = diffMs / 1000 / 60 / 60;
+    const diffH = (now - d) / 1000 / 60 / 60;
 
     if (diffH < 24) {
       return d.toLocaleTimeString('en-IN', {
@@ -93,16 +99,40 @@ function ChatSidebar({ onClose }) {
     });
   };
 
+  // Kya last message read ho chuka hai?
+  const isLastMessageRead = (uniqueId) => {
+    const key = `dm:${uniqueId}`;
+    const msgs = messagesByChat[key] || [];
+    if (msgs.length === 0) return false;
+
+    // Last message jo maine bheja hai
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].senderId === me?.uniqueId) {
+        return msgs[i].read === true;
+      }
+    }
+    return false;
+  };
+
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-gray-100">
+      {/* ===== Top Header (Home + Profile) ===== */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold">
+          <button
+            onClick={goHome}
+            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-xl shrink-0"
+            title="Home"
+          >
+            🏠
+          </button>
+
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold shrink-0">
             {me?.uniqueId?.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <div className="font-semibold text-gray-900 text-sm">
+
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-gray-900 text-sm truncate">
               {me?.uniqueId}
             </div>
             <div className="text-xs text-green-500">
@@ -112,7 +142,7 @@ function ChatSidebar({ onClose }) {
         </div>
       </div>
 
-      {/* Chats list */}
+      {/* ===== Chat List ===== */}
       <div className="flex-1 overflow-y-auto">
         {/* General */}
         <button
@@ -141,17 +171,53 @@ function ChatSidebar({ onClose }) {
           </div>
         </button>
 
+        {/* 🌸 Riya_22 */}
+        <button
+          onClick={() => handleSelect('riya_22')}
+          className={`w-full text-left px-4 py-3 flex items-center gap-3 border-b border-gray-100 transition-colors ${
+            activeChat === 'riya_22'
+              ? 'bg-pink-50 border-l-4 border-l-pink-500'
+              : 'hover:bg-pink-50/50'
+          }`}
+        >
+          <div className="relative shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-2xl">
+              🌸
+            </div>
+            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white bg-green-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="font-semibold text-gray-900 truncate">
+                Riya_22
+              </div>
+              <span className="text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.5 rounded-full font-bold">
+                AI
+              </span>
+              {riyaUnread > 0 && (
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shrink-0 shadow-md animate-pulse" />
+              )}
+            </div>
+            <div className="text-xs text-pink-600 truncate">
+              Hamesha baat karne ke liye ready 🌸
+            </div>
+          </div>
+        </button>
+
+        {/* DM label */}
         {sorted.length > 0 && (
           <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             Direct Messages
           </div>
         )}
 
+        {/* DM list */}
         {sorted.map((c) => {
           const isOnline = onlineIds.has(c.uniqueId);
           const isActive = activeChat === c.uniqueId;
           const unread = unreadCounts[`dm:${c.uniqueId}`] || 0;
           const isOwnLast = c.lastSender === me?.uniqueId;
+          const lastRead = isOwnLast ? isLastMessageRead(c.uniqueId) : false;
 
           return (
             <button
@@ -189,16 +255,22 @@ function ChatSidebar({ onClose }) {
                   </div>
                 </div>
                 <div
-                  className={`text-xs truncate mt-0.5 ${
+                  className={`text-xs truncate mt-0.5 flex items-center gap-1 ${
                     unread > 0
                       ? 'font-semibold text-gray-800'
                       : 'text-gray-500'
                   }`}
                 >
                   {isOwnLast && (
-                    <span className="text-gray-400 mr-1">✓</span>
+                    <span
+                      className={`shrink-0 ${
+                        lastRead ? 'text-sky-500 font-bold' : 'text-gray-400'
+                      }`}
+                    >
+                      {lastRead ? '✓✓' : '✓'}
+                    </span>
                   )}
-                  {c.lastMessage}
+                  <span className="truncate">{c.lastMessage}</span>
                 </div>
               </div>
             </button>

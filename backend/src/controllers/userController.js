@@ -128,7 +128,7 @@ exports.getAllUsers = async (req, res) => {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
     const search = (req.query.search || '').trim().toLowerCase();
     const level = req.query.level ? parseInt(req.query.level) : null;
-    const status = req.query.status; // 'online' | 'offline' | undefined
+    const status = req.query.status;
     const sortBy = req.query.sort || 'createdAt';
     const order = req.query.order === 'asc' ? 1 : -1;
 
@@ -140,17 +140,23 @@ exports.getAllUsers = async (req, res) => {
       filter.level = level;
     }
 
-    // Online/offline filter
+    // Riya_22 ko exclude karo normal list se
+    filter.uniqueId = {
+      ...(filter.uniqueId || {}),
+      $ne: 'riya_22',
+    };
+
+    // Online filter
     const onlineIds = presence.getOnlineIds();
     if (status === 'online') {
       filter.uniqueId = {
         ...(filter.uniqueId || {}),
-        $in: onlineIds.length ? onlineIds : ['___none___']
+        $in: onlineIds.length ? onlineIds : ['___none___'],
       };
     } else if (status === 'offline') {
       filter.uniqueId = {
         ...(filter.uniqueId || {}),
-        $nin: onlineIds
+        $nin: onlineIds,
       };
     }
 
@@ -165,16 +171,31 @@ exports.getAllUsers = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(filter)
+      User.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(totalMembers / limit) || 1;
+    // Riya_22 ko dhoondo
+    const riya = await User.findOne({ uniqueId: 'riya_22' })
+      .select('uniqueId level tokens message createdAt')
+      .lean();
 
-    // Har user ke saath isOnline bhi bhejo
-    const enriched = users.map(u => ({
+    // Har user ke saath isOnline flag
+    const enriched = users.map((u) => ({
       ...u,
-      isOnline: presence.isOnline(u.uniqueId)
+      isOnline: presence.isOnline(u.uniqueId),
+      isBot: false,
     }));
+
+    // Riya_22 ko sabse upar
+    if (riya) {
+      enriched.unshift({
+        ...riya,
+        isOnline: true,
+        isBot: true,
+      });
+    }
+
+    const totalPages = Math.ceil(totalMembers / limit) || 1;
 
     res.status(200).json({
       success: true,
@@ -185,16 +206,15 @@ exports.getAllUsers = async (req, res) => {
         totalMembers,
         totalPages,
         hasNextPage: page < totalPages,
-        hasPrevPage: page > 1
+        hasPrevPage: page > 1,
       },
-      data: enriched
+      data: enriched,
     });
   } catch (err) {
     console.error('Get all users error:', err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
-
 
 // GET /api/user/online - kitne online hain + list
 exports.getOnlineUsers = async (req, res) => {
