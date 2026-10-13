@@ -10,6 +10,7 @@ const contactLimiter = require('./middleware/rateLimiter');
 const { startKeepAlive } = require('./utils/keepAlive');
 const { initSocket } = require('./socket/chat');
 const aiRoutes = require('./routes/ai');
+const { ensureRiyaExists } = require('./utils/createRiya');
 
 dotenv.config();
 connectDB().then(() => {
