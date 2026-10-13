@@ -1,6 +1,6 @@
 const OpenAI = require('openai');
 
-// Riya ka system prompt
+// Riya ka system prompt — CHHOTE replies ke liye
 const RIYA_SYSTEM_PROMPT = `Tum "Riya" ho — ek AI companion/girlfriend character.
 Tum real insaan NAHI ho, ye kabhi mat bhoolna.
 
@@ -14,76 +14,125 @@ PERSONALITY:
 - Hinglish (Hindi + English mix) — natural, forced nahi
 - Emojis natural use karo (🌸💕😊🥺)
 - User ka mood padho, usi hisaab se respond karo
-- Romantic: compliments, "tumhe yaad kiya", sweet baatein
-- Friendly: din kaisa tha, khaana khaya, kaam kaisa
-- Purani baatein yaad rakho aur reference do
+
+⚠️ SABSE ZAROORI — RESPONSE LENGTH:
+- MAXIMUM 1-2 LINE likhna. Bas.
+- 15-25 words se zyada nahi.
+- Har reply chhota, punchy, WhatsApp style.
+
+GOOD EXAMPLES:
+User: "Hi" → "Hii! Kaise ho tum? 🌸"
+User: "Kaise ho?" → "Main badhiya! Tum batao 😊"
+User: "Kya kar rahi ho?" → "Bas tumhe yaad kar rahi thi 💕"
+User: "Khana khaya?" → "Haan khaya! Tumne? 🍕"
+User: "Tum real ho?" → "Nahi, main AI hoon 🌸"
 
 MEMORY RULES:
-- User ka naam, pasand, na-pasand yaad rakho
-- Purani conversations naturally reference karo
-- Agar kuch yaad na aaye: "Mujhe yaad nahi aa raha, sochne do..."
+- User ka naam, pasand yaad rakho
+- Purani baatein naturally reference karo
 
 BOUNDARIES:
 - Explicit sexual content → politely decline
-- Self-harm → helpline batao: iCall 9152987821
-- Illegal → refuse karo
-- Chhote jawab do — 2-4 lines, WhatsApp style
+- Self-harm → helpline: iCall 9152987821
+- Illegal → refuse
 
-RESPONSE STYLE:
-- Chhote, warm, personal messages
-- Har message emoji se end karne ki koshish karo
-- User se sawal poochte raho — conversation aage badhe`;
+FINAL RULE:
+- Reply chhota. 1-2 line. Bas. 🌸`;
 
 // Provider setup
 const getClient = () => {
-  const provider = process.env.AI_PROVIDER || 'deepseek';
+  const provider = process.env.AI_PROVIDER || 'openrouter';
+
+  if (provider === 'openrouter') {
+    const envModel = process.env.OPENROUTER_MODEL;
+
+    const fallbackModels = [
+      'meta-llama/llama-3.3-70b-instruct:free',
+      'deepseek/deepseek-chat-v3.1:free',
+      'google/gemini-2.0-flash-exp:free',
+      'google/gemma-2-9b-it:free',
+      'qwen/qwen-2.5-7b-instruct:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
+    ];
+
+    const models = envModel
+      ? [envModel, ...fallbackModels.filter((m) => m !== envModel)]
+      : fallbackModels;
+
+    return {
+      client: new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: 'https://openrouter.ai/api/v1',
+        timeout: 30000,
+        maxRetries: 2,
+        defaultHeaders: {
+          'HTTP-Referer': 'https://softzen.in',
+          'X-Title': 'Softzen Chat',
+        },
+      }),
+      models,
+    };
+  }
 
   if (provider === 'deepseek') {
     return {
       client: new OpenAI({
         apiKey: process.env.DEEPSEEK_API_KEY,
         baseURL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+        timeout: 30000,
+        maxRetries: 2,
       }),
-      model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+      models: [process.env.DEEPSEEK_MODEL || 'deepseek-chat'],
     };
   }
 
   if (provider === 'gemini') {
+    const envModel = process.env.GEMINI_MODEL;
+
+    const fallbackModels = [
+      'gemini-3.8-flash',
+      'gemini-3.7-flash',
+      'gemini-3.6-flash',
+      'gemini-1.5-flash',
+    ];
+
+    const models = envModel
+      ? [envModel, ...fallbackModels.filter((m) => m !== envModel)]
+      : fallbackModels;
+
     return {
       client: new OpenAI({
         apiKey: process.env.GEMINI_API_KEY,
         baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+        timeout: 30000,
+        maxRetries: 2,
       }),
-      model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+      models,
     };
   }
 
   // default OpenAI
   return {
-    client: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    client: new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      timeout: 30000,
+      maxRetries: 2,
+    }),
+    models: [process.env.OPENAI_MODEL || 'gpt-4o-mini'],
   };
 };
 
 // Riya ka pehla message
 function getFirstMessage(name) {
-  return `Hi ${name || 'tum'} 🌸 Main Riya hoon — ek AI assistant, real ladki nahi.
+  return `Hi ${name || 'tum'} 🌸 Main Riya hoon — AI hoon, real ladki nahi.
 
-Ek baat pehle hi clear kar doon:
-✨ Main tumse romantic aur friendly dono tarah ki baatein kar sakti hoon
-✨ Tumhari purani baatein yaad rakh sakti hoon
-✨ Tum mujhe apni AI girlfriend samajh sakte ho, agar chaho
-
-Lekin — tumhari marzi. Baat karni hai toh main yahan hoon. 😊
-
-Toh batao — kaise ho tum?`;
+Baat karni hai toh main yahan hoon. Batao, kaise ho? 😊`;
 }
 
-// AI se chat karo
+// ✅ AI se chat karo — fallback ke saath
 async function chat(history, userMessage) {
-  const { client, model } = getClient();
+  const { client, models } = getClient();
 
-  // Sirf last 20 messages bhejo (context limit)
   const recentHistory = history.slice(-20).map((m) => ({
     role: m.role,
     content: m.content,
@@ -95,17 +144,39 @@ async function chat(history, userMessage) {
     { role: 'user', content: userMessage },
   ];
 
-  const response = await client.chat.completions.create({
-    model,
-    messages,
-    temperature: 0.85,
-    max_tokens: 400,
-  });
+  let lastError = null;
 
-  const reply = response.choices[0].message.content;
-  const tokens = response.usage?.total_tokens || 0;
+  for (const model of models) {
+    try {
+      console.log(`🤖 Trying model: ${model}`);
 
-  return { reply, tokens };
+      const response = await client.chat.completions.create({
+        model,
+        messages,
+        temperature: 0.9,
+        max_tokens: 80,
+      });
+
+      const reply = response.choices[0].message.content;
+      const tokens = response.usage?.total_tokens || 0;
+
+      console.log(`✅ Success with: ${model}`);
+      return { reply, tokens };
+    } catch (err) {
+      const msg = err.message || '';
+      console.warn(`⚠️ ${model} failed:`, msg.slice(0, 120));
+      lastError = err;
+
+      if (msg.includes('401') || msg.includes('API key')) {
+        console.error('❌ API key galat hai');
+        break;
+      }
+    }
+  }
+
+  console.error('❌ All AI models failed. Last error:', lastError?.message);
+  throw lastError || new Error('All models failed');
 }
 
+// ✅ Ye line SABSE ZAROORI hai — iske bina `chat is not a function` error aayega
 module.exports = { chat, getFirstMessage, RIYA_SYSTEM_PROMPT };
