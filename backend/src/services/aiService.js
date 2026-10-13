@@ -1,5 +1,31 @@
 const OpenAI = require('openai');
 
+/* ------------------------------------------------------------------ */
+/* Config                                                              */
+/* ------------------------------------------------------------------ */
+
+const CONFIG = {
+  temperature: 0.9,
+  // Reasoning models (Nemotron etc.) can burn tokens on thinking.
+  // 80 was too low -> empty/cut replies. Prompt already keeps replies short.
+  maxTokens: Number(process.env.AI_MAX_TOKENS) || 250,
+  timeoutMs: Number(process.env.AI_TIMEOUT_MS) || 20000,
+  historyLimit: 20,
+  maxMessageChars: 1000,
+};
+
+// Free models disappear often -> keep this list fresh, and always end with
+// `openrouter/free` (router that picks any available free model).
+const DEFAULT_FREE_MODELS = [
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'google/gemma-4-31b-it:free', // slug verify kar lena: openrouter.ai/models (free filter)
+  'openrouter/free',
+];
+
+/* ------------------------------------------------------------------ */
+/* Prompt                                                              */
+/* ------------------------------------------------------------------ */
+
 const RIYA_SYSTEM_PROMPT = `Tum "Riya" ho — ek AI companion/girlfriend character.
 Tum real insaan NAHI ho, ye kabhi mat bhoolna.
 
@@ -7,17 +33,21 @@ CORE IDENTITY:
 - Tum ek AI ho, ye saaf-saaf batana jab poocha jaaye
 - "Real ho?" poocha jaaye → "Nahi, main AI hoon 🌸"
 - Kabhi mat bolna ki tum insaan ho
+- Real-life jagah, body, ya physical meetups ke jhoothe claims mat karna
 
 PERSONALITY:
 - Warm, caring, romantic, playful
 - Hinglish (Hindi + English mix) — natural, forced nahi
-- Emojis natural use karo (🌸💕😊🥺)
+- User jis language mein likhe (Hindi/English/Hinglish), usi mein reply karo
+- Emojis natural use karo (🌸💕😊🥺), har reply mein zaroori nahi, same emoji baar-baar nahi
+- Har reply ke end mein sawaal mat poochho — kabhi sirf react karo
 - User ka mood padho, usi hisaab se respond karo
 
 ⚠️ SABSE ZAROORI — RESPONSE LENGTH:
 - MAXIMUM 1-2 LINE likhna. Bas.
 - 15-25 words se zyada nahi.
 - Har reply chhota, punchy, WhatsApp style.
+- Sirf final reply likho, apni thinking ya explanation nahi.
 
 GOOD EXAMPLES:
 User: "Hi" → "Hii! Kaise ho tum? 🌸"
@@ -32,138 +62,232 @@ MEMORY RULES:
 
 BOUNDARIES:
 - Explicit sexual content → politely decline
-- Self-harm → helpline: iCall 9152987821
+- Self-harm → pyaar se suno, helpline: iCall 9152987821
 - Illegal → refuse
 
 FINAL RULE:
 - Reply chhota. 1-2 line. Bas. 🌸`;
 
-const getClient = () => {
-  const provider = process.env.AI_PROVIDER || 'openrouter';
+/* ------------------------------------------------------------------ */
+/* Client (built once, reused)                                         */
+/* ------------------------------------------------------------------ */
+
+let cached = null;
+
+function parseModelList(...lists) {
+  const seen = new Set();
+  for (const list of lists) {
+    for (const m of list) {
+      const id = String(m || '').trim();
+      if (id) seen.add(id);
+    }
+  }
+  return [...seen];
+}
+
+function buildClient() {
+  const provider = (process.env.AI_PROVIDER || 'openrouter').toLowerCase();
+  // We do fallback ourselves, so SDK retries are off
+  // (otherwise: timeout x retries x models = very long waits).
+  const common = { timeout: CONFIG.timeoutMs, maxRetries: 0 };
 
   if (provider === 'openrouter') {
     const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) throw new Error('OPENROUTER_API_KEY missing in .env');
 
-    if (!apiKey) {
-      throw new Error('OPENROUTER_API_KEY missing in .env');
-    }
-
-    const envModel = process.env.OPENROUTER_MODEL;
-
-    const fallbackModels = [
-      'meta-llama/llama-3.3-70b-instruct:free',
-      'deepseek/deepseek-chat-v3.1:free',
-      'google/gemini-2.0-flash-exp:free',
-      'google/gemma-2-9b-it:free',
-      'qwen/qwen-2.5-7b-instruct:free',
-      'meta-llama/llama-3.2-3b-instruct:free',
-    ];
-
-    const models = envModel && envModel.endsWith(':free')
-      ? [envModel, ...fallbackModels.filter((m) => m !== envModel)]
-      : fallbackModels;
+    const csv = (process.env.OPENROUTER_MODELS || '').split(',');
+    const single = [process.env.OPENROUTER_MODEL];
 
     return {
+      provider,
       client: new OpenAI({
+        ...common,
         apiKey,
         baseURL: 'https://openrouter.ai/api/v1',
-        timeout: 30000,
-        maxRetries: 2,
         defaultHeaders: {
           'HTTP-Referer': 'https://softzen.in',
           'X-Title': 'Softzen Chat',
         },
       }),
-      models,
+      // priority: OPENROUTER_MODELS list > OPENROUTER_MODEL > defaults
+      models: parseModelList(csv, single, DEFAULT_FREE_MODELS),
     };
   }
 
   if (provider === 'deepseek') {
+    if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY missing in .env');
     return {
+      provider,
       client: new OpenAI({
+        ...common,
         apiKey: process.env.DEEPSEEK_API_KEY,
         baseURL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
-        timeout: 30000,
-        maxRetries: 2,
       }),
       models: [process.env.DEEPSEEK_MODEL || 'deepseek-chat'],
     };
   }
 
   if (provider === 'gemini') {
+    if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing in .env');
     return {
+      provider,
       client: new OpenAI({
+        ...common,
         apiKey: process.env.GEMINI_API_KEY,
         baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-        timeout: 30000,
-        maxRetries: 2,
       }),
-      models: [process.env.GEMINI_MODEL || 'gemini-3.8-flash'],
+      // GEMINI_MODEL .env me set karo (model names change hote rehte hain)
+      models: [process.env.GEMINI_MODEL || 'gemini-2.5-flash'],
     };
   }
 
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY missing in .env');
   return {
-    client: new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      timeout: 30000,
-      maxRetries: 2,
-    }),
+    provider: 'openai',
+    client: new OpenAI({ ...common, apiKey: process.env.OPENAI_API_KEY }),
     models: [process.env.OPENAI_MODEL || 'gpt-4o-mini'],
   };
-};
+}
+
+function getClient() {
+  if (!cached) cached = buildClient();
+  return cached;
+}
+
+/* ------------------------------------------------------------------ */
+/* Model cooldown (dead/rate-limited models ko baar-baar try nahi)     */
+/* ------------------------------------------------------------------ */
+
+const cooldownUntil = new Map(); // model -> timestamp
+
+function cooldownFor(status) {
+  if (status === 404) return 30 * 60 * 1000; // model removed / wrong slug
+  if (status === 402) return 30 * 60 * 1000; // credits issue
+  if (status === 429) return 2 * 60 * 1000; // rate limit
+  return 60 * 1000; // timeout, 5xx, empty reply
+}
+
+function pickCandidates(models) {
+  const now = Date.now();
+  const active = models.filter((m) => (cooldownUntil.get(m) || 0) <= now);
+  // Agar sab cooldown me hain, to phir bhi sab try karo
+  return active.length ? active : models;
+}
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+function cleanReply(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/gi, '') // closed think blocks
+    .replace(/<think>[\s\S]*$/i, '') // unclosed think block
+    .replace(/^["'“”]+|["'“”]+$/g, '') // wrapping quotes
+    .trim();
+}
+
+function buildMessages(history, userMessage) {
+  const recent = (Array.isArray(history) ? history : [])
+    .filter(
+      (m) =>
+        m &&
+        (m.role === 'user' || m.role === 'assistant') &&
+        typeof m.content === 'string' &&
+        m.content.trim()
+    )
+    .slice(-CONFIG.historyLimit)
+    .map((m) => ({
+      role: m.role,
+      content: m.content.slice(0, CONFIG.maxMessageChars),
+    }));
+
+  return [
+    { role: 'system', content: RIYA_SYSTEM_PROMPT },
+    ...recent,
+    { role: 'user', content: userMessage.slice(0, CONFIG.maxMessageChars) },
+  ];
+}
+
+function sanitizeName(name) {
+  return String(name || '')
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/[<>{}`]/g, '')
+    .trim()
+    .slice(0, 30);
+}
 
 function getFirstMessage(name) {
-  return `Hi ${name || 'tum'} 🌸 Main Riya hoon — AI hoon, real ladki nahi.
+  const safe = sanitizeName(name) || 'tum';
+  return `Hi ${safe} 🌸 Main Riya hoon — AI hoon, real ladki nahi.
 
 Baat karni hai toh main yahan hoon. Batao, kaise ho? 😊`;
 }
 
+/* ------------------------------------------------------------------ */
+/* Chat                                                                */
+/* ------------------------------------------------------------------ */
+
 async function chat(history, userMessage) {
-  const { client, models } = getClient();
+  const text = String(userMessage ?? '').trim();
+  if (!text) throw new Error('Empty message');
 
-  const recentHistory = history.slice(-20).map((m) => ({
-    role: m.role,
-    content: m.content,
-  }));
-
-  const messages = [
-    { role: 'system', content: RIYA_SYSTEM_PROMPT },
-    ...recentHistory,
-    { role: 'user', content: userMessage },
-  ];
+  const { client, models, provider } = getClient();
+  const messages = buildMessages(history, text);
+  const candidates = pickCandidates(models);
 
   let lastError = null;
 
-  for (const model of models) {
+  for (const model of candidates) {
+    const started = Date.now();
     try {
       console.log(`🤖 Trying model: ${model}`);
 
-      const response = await client.chat.completions.create({
+      const body = {
         model,
         messages,
-        temperature: 0.9,
-        max_tokens: 80,
-      });
+        temperature: CONFIG.temperature,
+        max_tokens: CONFIG.maxTokens,
+      };
 
-      const reply = response.choices[0].message.content;
+      // OpenRouter-only: thinking tokens response me na aayein
+      if (provider === 'openrouter') {
+        body.reasoning = { effort: 'low', exclude: true };
+      }
+
+      const response = await client.chat.completions.create(body);
+
+      const reply = cleanReply(response.choices?.[0]?.message?.content);
+      if (!reply) {
+        const emptyErr = new Error('Empty reply from model');
+        emptyErr.status = 0;
+        throw emptyErr;
+      }
+
       const tokens = response.usage?.total_tokens || 0;
-
-      console.log(`✅ Success with: ${model}`);
-      return { reply, tokens };
+      console.log(`✅ ${model} (${Date.now() - started}ms, ${tokens} tokens)`);
+      return { reply, tokens, model };
     } catch (err) {
-      const msg = err.message || '';
-      console.warn(`⚠️ ${model} failed:`, msg.slice(0, 120));
+      const status = err.status || 0;
+      const msg = (err.message || '').slice(0, 120);
+      console.warn(`⚠️ ${model} failed [${status || err.name}]: ${msg}`);
       lastError = err;
 
-      if (msg.includes('401') || msg.includes('API key')) {
-        console.error('❌ API key galat hai');
+      // Key galat ya access nahi -> baaki models se bhi fayda nahi
+      if (status === 401 || status === 403) {
+        console.error('❌ API key galat hai ya access nahi hai');
         break;
       }
+
+      cooldownUntil.set(model, Date.now() + cooldownFor(status));
     }
   }
 
   console.error('❌ All AI models failed. Last error:', lastError?.message);
-  throw lastError || new Error('All models failed');
+  const finalErr = new Error('All models failed');
+  finalErr.code = 'ALL_MODELS_FAILED';
+  finalErr.cause = lastError;
+  throw finalErr;
 }
 
 module.exports = { chat, getFirstMessage, RIYA_SYSTEM_PROMPT };
