@@ -4,7 +4,7 @@ const Message = require('../models/Message');
 const AIChat = require('../models/AIChat');
 const User = require('../models/User');
 const presence = require('./presence');
-const aiService = require('../services/aiService');
+const botService = require('../services/botService');
 
 const RIYA_ID = 'riya_22';
 
@@ -115,10 +115,7 @@ const initSocket = (httpServer) => {
               content: text.trim(),
             });
 
-            const { reply, tokens } = await aiService.chat(
-              riyaHistory,
-              text.trim()
-            );
+           const { reply, tokens } = await botService.chat(text.trim());
 
             await AIChat.create({
               userId: userDoc?._id,
