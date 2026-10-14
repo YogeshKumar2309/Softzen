@@ -1,4 +1,5 @@
 // Chat App → AI Service (chatBotAi) ko call kare
+require("dotenv").config();
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5000";
 const TIMEOUT_MS = 15000;
