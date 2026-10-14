@@ -1,6 +1,6 @@
 const AIChat = require('../models/AIChat');
 const User = require('../models/User');
-const aiService = require('../services/aiService');
+const botService = require('../services/botService');
 
 // GET /api/ai/history
 exports.getHistory = async (req, res) => {
@@ -14,7 +14,7 @@ exports.getHistory = async (req, res) => {
 
     // Agar pehli baar hai — Riya ka welcome message bhejo
     if (messages.length === 0) {
-      const welcome = aiService.getFirstMessage(user.uniqueId);
+      const welcome = botService.getFirstMessage(user.uniqueId);
 
       const saved = await AIChat.create({
         userId: user.id,
@@ -78,7 +78,7 @@ exports.chat = async (req, res) => {
     // AI se reply lo
     let reply, tokens;
     try {
-      const result = await aiService.chat(history, message.trim());
+      const result = await botService.chat(message.trim());
       reply = result.reply;
       tokens = result.tokens;
     } catch (aiErr) {
