@@ -1,65 +1,72 @@
-// Keep-alive function to prevent Render free tier from sleeping
-const startKeepAlive = () => {
-  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
-  const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes (Render sleeps after 15 min inactivity)
+// Keep-alive: multiple Render services ko ping karta hai
+const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes (Render 15 min me sota hai)
+const TIMEOUT = 60 * 1000; // cold start ke liye 60s
 
-  if (!RENDER_URL) {
-    console.log('⚠️  RENDER_EXTERNAL_URL not set in environment variables');
-    console.log('💡 Self-ping disabled. Please set up external cron job:');
-    console.log('   - UptimeRobot: https://uptimerobot.com');
-    console.log('   - Cron-job.org: https://cron-job.org');
-    return;
+const getTargets = () => {
+  const targets = [];
+
+  if (process.env.RENDER_EXTERNAL_URL) {
+    targets.push({
+      name: 'Softzen Backend',
+      url: `${process.env.RENDER_EXTERNAL_URL}/health`,
+      json: true,
+    });
   }
 
-  console.log('✅ Self-ping enabled');
-  console.log(`📍 Ping URL: ${RENDER_URL}/health`);
-  console.log(`⏱️  Interval: Every 14 minutes`);
+  targets.push({
+    name: 'ChatbotAI',
+    url: 'https://chatbotai-5te2.onrender.com/health',
+    json: false,
+  });
 
-  // Initial ping after 1 minute
-  setTimeout(() => {
-    console.log('🔄 Starting first self-ping...');
-    pingServer();
-  }, 60 * 1000);
-
-  // Regular ping every 14 minutes
-  setInterval(() => {
-    pingServer();
-  }, PING_INTERVAL);
+  return targets;
 };
 
-const pingServer = async () => {
-  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
-  
+const timestamp = () =>
+  new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+
+const pingOne = async ({ name, url, json }) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT);
+  const start = Date.now();
+
   try {
-    const startTime = Date.now();
-    const response = await fetch(`${RENDER_URL}/health`);
-    const data = await response.json();
-    const responseTime = Date.now() - startTime;
-    
-    const timestamp = new Date().toLocaleString('en-IN', { 
-      timeZone: 'Asia/Kolkata',
-      hour12: true 
-    });
-    
-    console.log('━'.repeat(50));
-    console.log(`✅ Self-Ping Successful`);
-    console.log(`🕐 Time: ${timestamp}`);
-    console.log(`⚡ Response: ${responseTime}ms`);
-    console.log(`📊 Status: ${data.status}`);
-    console.log(`⏱️  Uptime: ${Math.floor(data.uptime / 60)} minutes`);
-    console.log('━'.repeat(50));
+    const res = await fetch(url, { signal: controller.signal });
+    const ms = Date.now() - start;
+
+    let extra = '';
+    if (json) {
+      const data = await res.json();
+      extra = ` | status: ${data.status} | uptime: ${Math.floor(data.uptime / 60)} min`;
+    }
+
+    console.log(`✅ [${name}] ${res.status} in ${ms}ms${extra} | ${timestamp()}`);
   } catch (error) {
-    const timestamp = new Date().toLocaleString('en-IN', { 
-      timeZone: 'Asia/Kolkata',
-      hour12: true 
-    });
-    
-    console.error('━'.repeat(50));
-    console.error(`❌ Self-Ping Failed`);
-    console.error(`🕐 Time: ${timestamp}`);
-    console.error(`💥 Error: ${error.message}`);
-    console.error('━'.repeat(50));
+    const reason = error.name === 'AbortError' ? 'timeout' : error.message;
+    console.error(`❌ [${name}] Failed: ${reason} | ${timestamp()}`);
+  } finally {
+    clearTimeout(timer);
   }
+};
+
+const pingAll = async () => {
+  console.log('━'.repeat(50));
+  await Promise.allSettled(getTargets().map(pingOne));
+  console.log('━'.repeat(50));
+};
+
+const startKeepAlive = () => {
+  if (!process.env.RENDER_EXTERNAL_URL) {
+    console.log('⚠️  RENDER_EXTERNAL_URL set nahi hai — sirf external targets ping honge');
+    console.log('💡 Backup ke liye UptimeRobot (https://uptimerobot.com) ya cron-job.org use karo');
+  }
+
+  const targets = getTargets();
+  console.log(`✅ Keep-alive enabled for ${targets.length} target(s), every 14 min`);
+  targets.forEach((t) => console.log(`📍 ${t.name}: ${t.url}`));
+
+  setTimeout(pingAll, 60 * 1000);       // pehla ping 1 min baad
+  setInterval(pingAll, PING_INTERVAL);  // phir har 14 min
 };
 
 module.exports = { startKeepAlive };
